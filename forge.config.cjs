@@ -24,12 +24,12 @@ module.exports = {
     {
       name: '@electron-forge/maker-deb',
       platforms: ['linux'],
-      config: { options: { maintainer: 'Xovra' } }
+      config: { options: { name: 'xovra', bin: 'xovra', maintainer: 'Xovra' } }
     },
     {
       name: '@electron-forge/maker-rpm',
       platforms: ['linux'],
-      config: { options: {} }
+      config: { options: { name: 'xovra', bin: 'xovra' } }
     }
   ]
 };

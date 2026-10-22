@@ -30,11 +30,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install WiX Toolset 3
-        if: runner.os == 'Windows'
-        run: choco install wixtoolset --version=3.14.0 --yes --no-progress
-        shell: pwsh
-
       - name: Install Linux packaging tools
         if: runner.os == 'Linux'
         run: |
