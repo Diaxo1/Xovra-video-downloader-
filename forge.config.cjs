@@ -29,7 +29,7 @@ module.exports = {
     {
       name: '@electron-forge/maker-rpm',
       platforms: ['linux'],
-      config: { options: { name: 'xovra', bin: 'xovra' } }
+      config: { options: { name: 'xovra', bin: 'xovra', license: 'Unspecified' } }
     }
   ]
 };

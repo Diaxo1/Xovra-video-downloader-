@@ -17,10 +17,10 @@ The desktop shell starts the local media service on an available loopback port a
 
 For desktop development, install the dependencies with `npm install`, set up yt-dlp with `npm run setup:engine`, and make sure FFmpeg/FFprobe are on `PATH`; then run `npm run start:desktop`. To create an installer, build on the target operating system with `npm run make:desktop`. The build prepares verified yt-dlp and platform-specific FFmpeg binaries, then writes installers under `out/make`:
 
-- Windows x64: WiX `.msi` installer (requires WiX Toolset 3).
+- Windows x64: Squirrel `Setup.exe` and WiX `.msi` installers (requires WiX Toolset 3 for local builds).
 - Linux x64: Debian `.deb` and RPM `.rpm` packages (requires `fakeroot` and `rpm`).
 
-The GitHub Actions workflow at `.github/workflows/build-desktop.yml` builds both targets on native Windows and Linux runners when manually dispatched, then stores the installers as downloadable workflow artifacts. These unsigned builds are for early distribution; code signing can be added before a public release.
+The GitHub Actions workflow at `.github/workflows/build-desktop.yml` builds both targets on native Windows and Linux runners when `main` is updated or the workflow is manually dispatched. It stores the installers as downloadable workflow artifacts for 30 days. These unsigned builds are for early distribution; code signing can be added before a public release.
 
 The bundled FFmpeg build has separate license and source obligations. The generated engine folder contains a manifest and third-party notices. Review those notices and provide the required corresponding source/build information before publishing installers.
 
