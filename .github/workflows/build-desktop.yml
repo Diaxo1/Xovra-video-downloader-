@@ -1,0 +1,54 @@
+name: Build Xovra desktop installers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build for ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-x64
+            runner: windows-latest
+          - platform: linux-x64
+            runner: ubuntu-latest
+
+    steps:
+      - name: Check out Xovra
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install WiX Toolset 3
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --version=3.14.0 --yes --no-progress
+        shell: pwsh
+
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes fakeroot rpm
+
+      - name: Install project dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build native installer packages
+        run: npm run make:desktop
+
+      - name: Upload installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xovra-${{ matrix.platform }}-${{ github.sha }}
+          path: out/make/
+          if-no-files-found: error
+          retention-days: 30

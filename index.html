@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2f1e7">
+  <meta name="description" content="Analyze media links and choose an available format.">
+  <title>Xovra — your media, your call</title>
+  <link rel="icon" type="image/svg+xml" href="assets/xovra-mark.svg">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-mark.svg" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
+      <p class="nav-heading">Workspace</p>
+      <nav class="nav-list" aria-label="Workspace">
+        <button class="nav-item active" type="button" data-page="analyzer" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg><span>Analyzer</span></button>
+        <button class="nav-item" type="button" data-page="downloads"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 16v4h14v-4"/></svg><span>Downloads</span><span class="nav-count" id="download-count" hidden>0</span></button>
+        <button class="nav-item" type="button" data-page="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 6.3 3 3M4 20l8.6-8.6M14 4.5a4.3 4.3 0 0 0 5.5 5.5L12 17.5 6.5 12z"/><circle cx="5" cy="19" r="2"/></svg><span>Media tools</span></button>
+        <button class="nav-item" type="button" data-page="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.2-5.7L3.5 8.5"/><path d="M3.5 4.5v4h4M12 7v5l3.5 2"/></svg><span>History</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-engine"><span class="status-dot" aria-hidden="true"></span><span id="engine-sidebar-status">Local engine disconnected</span></div>
+        <button class="nav-item desktop-settings" type="button" data-page="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19 13 2 1-2 4-2-1-2 1v2h-5v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V4h5v2l2 1 2-1 2 4-2 1z"/></svg><span>Settings</span></button>
+        <div class="sidebar-user"><span class="user-avatar">G</span><span><strong>Guest workspace</strong><small>Local session</small></span></div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="breadcrumb-page">Analyzer</strong></div>
+        <a class="brand mobile-brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-mark.svg" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
+        <div class="topbar-utilities">
+          <button class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></button>
+          <button class="nav-item mobile-settings-shortcut" type="button" data-page="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19 13 2 1-2 4-2-1-2 1v2h-5v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V4h5v2l2 1 2-1 2 4-2 1z"/></svg></button>
+        </div>
+      </header>
+      <div class="page-wrap">
+        <section id="analyzer-view" class="page-view" aria-labelledby="page-title">
+          <div class="intro"><p class="eyebrow">THE MEDIA DESK</p><h1 id="page-title"><span>Your media.</span><span class="headline-muted">Your call.</span></h1><p class="intro-copy">Choose a source, then pick from what that link actually offers.</p><div class="hero-mark" aria-hidden="true"><span class="hero-mark-recess"></span><span class="hero-mark-glyph"><img src="assets/xovra-mark.svg" alt=""></span><span class="hero-mark-sparkle"><svg viewBox="0 0 24 24"><path d="M12 2.5 14 9l6.5 2-6.5 2-2 6.5L10 13l-6.5-2L10 9z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span></div></div>
+          <div class="engine-banner" id="engine-banner" role="status"><span class="banner-dot" aria-hidden="true"></span><p><strong id="engine-status-title">Local engine isn’t connected.</strong> <span id="engine-status-copy">Connect the local engine to analyze links and see available formats.</span></p><button type="button" id="connect-engine" class="connect-button">Connect</button></div>
+
+          <div class="analyzer-board">
+          <section class="main-surface" aria-label="Analyze a media link">
+            <div class="source-heading"><h2>Choose a source</h2><span class="source-hint">Auto detects from your link</span></div>
+            <div class="source-options" role="group" aria-label="Source platform">
+              <button class="source-option selected" type="button" data-source="auto" aria-pressed="true"><span class="source-symbol auto-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17a8 8 0 1 1 14-5M19 7v5h-5"/><path d="m9 12 2 2 4-5"/></svg></span>Auto</button>
+              <button class="source-option" type="button" data-source="youtube" aria-pressed="false"><span class="source-symbol youtube-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 7.2a2.8 2.8 0 0 0-2-2C17.2 4.7 12 4.7 12 4.7s-5.2 0-7 .5a2.8 2.8 0 0 0-2 2A29 29 0 0 0 2.5 12 29 29 0 0 0 3 16.8a2.8 2.8 0 0 0 2 2c1.8.5 7 .5 7 .5s5.2 0 7-.5a2.8 2.8 0 0 0 2-2 29 29 0 0 0 .5-4.8 29 29 0 0 0-.5-4.8Z"/><path d="m10 9 5 3-5 3z"/></svg></span>YouTube</button>
+              <button class="source-option" type="button" data-source="tiktok" aria-pressed="false"><span class="source-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 4v10.2a4.2 4.2 0 1 1-3.2-4.1M14 4c.6 3 2.5 4.6 5.5 4.8"/></svg></span>TikTok</button>
+              <button class="source-option" type="button" data-source="instagram" aria-pressed="false"><span class="source-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="icon-fill" cx="17.5" cy="6.8" r=".8"/></svg></span>Instagram</button>
+              <button class="source-option" type="button" data-source="x" aria-pressed="false"><span class="source-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4 19 20M19 4 5 20"/></svg></span>X</button>
+              <button class="source-option" type="button" data-source="facebook" aria-pressed="false"><span class="source-symbol facebook-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.2 20v-7.1h2.4l.4-2.8h-2.8V8.3c0-.8.3-1.4 1.4-1.4h1.5V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v1.8H8.3v2.8h2.6V20"/></svg></span>Facebook</button>
+              <button class="source-option" type="button" data-source="dailymotion" aria-pressed="false"><span class="source-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 4v16M18 8a6 6 0 1 0 0 8"/><path d="M18 8v8"/></svg></span>Dailymotion</button>
+              <label class="source-option more-source"><span class="source-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span><span class="sr-only">More sources</span><select id="source-override" aria-label="More sources"><option value="more" selected>More</option><option value="reddit">Reddit</option><option value="vimeo">Vimeo</option><option value="twitch">Twitch</option><option value="soundcloud">SoundCloud</option></select></label>
+            </div>
+            <form id="analyze-form" novalidate>
+              <label class="input-label" for="media-url">Now, bring the link.</label>
+              <div class="url-composer" id="url-composer">
+                <div class="url-entry">
+                  <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.7 1.7"/><path d="M14 10.5a4.5 4.5 0 0 0-6.4 0l-3 3A4.5 4.5 0 0 0 11 20l1.7-1.7"/></svg>
+                  <input id="media-url" name="url" type="url" autocomplete="url" placeholder="https://" spellcheck="false">
+                  <kbd class="paste-hint" aria-hidden="true">Ctrl V</kbd>
+                  <svg class="mobile-paste-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4V3h6v1m-6 8h6m-6 4h6"/></svg>
+                  <button class="clear-input" id="clear-input" type="button" aria-label="Clear link" hidden>×</button>
+                </div>
+                <button class="analyze-button" type="submit"><span>Analyze link</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+              </div>
+              <p class="input-helper">Paste a link from a supported source to see its options.</p>
+              <button type="button" id="batch-toggle" class="batch-toggle" aria-expanded="false">Add multiple links</button>
+              <div class="batch-area" id="batch-area" hidden><label for="batch-urls">One link per line</label><textarea id="batch-urls" rows="4" placeholder="Paste links here"></textarea></div>
+              <p class="form-message" id="form-message" role="status" aria-live="polite" hidden></p>
+              <div id="formats-result" class="formats-result" hidden aria-live="polite"><h3>Available formats</h3><div id="formats-list" class="media-results"></div></div>
+              <p class="permission-note">Only download media you have permission to use.</p>
+            </form>
+          </section>
+          <section class="recent-section" aria-labelledby="recent-heading"><div class="section-heading"><h2 id="recent-heading">Recent links</h2><button type="button" id="clear-recent" class="quiet-button" hidden>Clear</button></div><div id="recent-list" class="recent-list"></div></section>
+          </div>
+          <div class="mobile-workspace" aria-label="Workspace status">
+            <div class="mobile-workspace-card"><span class="mobile-workspace-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20a6.5 6.5 0 0 1 13 0"/></svg></span><span><strong>Guest workspace</strong><small>Local session</small></span><svg class="workspace-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4-4 4 4m-8 4 4 4 4-4"/></svg></div>
+            <p id="mobile-engine-status" class="mobile-engine-status" hidden><span class="status-dot" aria-hidden="true"></span><span>Local engine ready</span></p>
+          </div>
+        </section>
+        <section id="secondary-view" class="page-view secondary-view" hidden aria-live="polite"><h1 id="secondary-title"></h1><p id="secondary-copy" class="secondary-copy"></p><div id="secondary-content"></div></section>
+      </div>
+    </main>
+  </div>
+  <template id="clipper-template">
+    <div class="media-tools-workbench">
+    <div class="media-tool-picker" role="group" aria-label="Media tools">
+      <button class="media-tool-tab active" type="button" aria-pressed="true" data-tool="clip"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="m8 8 12 12M8 16 20 4M13 11l3-3"/></svg></span><span><strong>Clip video</strong><small>Cut a section</small></span></button>
+      <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="compress"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7V4h3m10 0h3v3M4 17v3h3m10 0h3v-3M8 12h8m-4-4v8"/></svg></span><span><strong>Compress</strong><small>Shrink file size</small></span></button>
+      <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="convert"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h14l-3-3m5 13H6l3 3M18 7l2-3M6 17l-2 3"/></svg></span><span><strong>Convert</strong><small>Change video format</small></span></button>
+      <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="audio"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4m4-8v12m4-15v18m4-14v10m4-7v4"/></svg></span><span><strong>Extract audio</strong><small>Save the soundtrack</small></span></button>
+    </div>
+    <section class="clipper-tool" id="clipper-panel" aria-labelledby="clipper-heading">
+      <div class="clipper-heading">
+        <span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="m10 9 5 3-5 3zM7 3v2m10-2v2M7 19v2m10-2v2"/></svg></span>
+        <div><h2 id="clipper-heading">Video clipper</h2><p>Paste a video link, choose a section and save the clip.</p></div>
+      </div>
+      <div class="media-source-switch" role="group" aria-label="Clip source"><button type="button" class="media-source-button active" aria-pressed="true" data-clip-source="link">Video link</button><button type="button" class="media-source-button" aria-pressed="false" data-clip-source="file">From your device</button></div>
+      <form id="clip-link-form" class="clip-link-form">
+        <label for="clip-url">Video link</label>
+        <div class="clip-url-row"><input id="clip-url" type="url" inputmode="url" placeholder="Paste a YouTube or other supported video link" autocomplete="url" required><button id="clip-load" class="analyze-button" type="submit"><span>Load link</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <p class="clip-file-hint">Paste a supported public link. Xovra uses the local engine to fetch the section you choose.</p>
+      </form>
+      <form id="clip-file-form" class="clip-file-form" hidden>
+        <label for="clip-file">Choose a video</label>
+        <div class="clip-file-row"><input id="clip-file" type="file" accept="video/*,.mp4,.m4v,.mov,.mkv,.webm,.avi,.mpg,.mpeg,.ts,.3gp" required><button id="clip-file-load" class="analyze-button" type="submit"><span>Use this video</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <p class="clip-file-hint">Choose a video up to 4 GB. It stays on this device.</p>
+      </form>
+      <p id="clip-message" class="clip-message" role="status" aria-live="polite" hidden></p>
+      <div class="clip-workspace" id="clip-workspace" hidden>
+        <div class="clip-link-summary"><img id="clip-thumbnail" alt="" hidden><div><span id="clip-provider" class="clip-provider"></span><strong id="clip-name"></strong><span id="clip-duration"></span></div></div>
+        <video id="clip-preview" class="clip-preview" controls playsinline preload="metadata" hidden></video>
+        <p class="clip-instructions">Drag the sliders or enter a time like 00:01:25.</p>
+        <div class="clip-time-controls">
+          <label class="clip-time-field"><span>Start time</span><div><input id="clip-start" type="text" inputmode="decimal" value="00:00:00" aria-label="Clip start time in hours, minutes and seconds"></div></label>
+          <label class="clip-time-field"><span>End time</span><div><input id="clip-end" type="text" inputmode="decimal" value="00:00:30" aria-label="Clip end time in hours, minutes and seconds"></div></label>
+        </div>
+        <div class="clip-range-sliders"><label class="clip-slider-field"><span>In point</span><input id="clip-start-range" type="range" min="0" max="30" step="1" value="0" aria-label="Set clip start"><span id="clip-start-range-label">00:00:00</span></label><label class="clip-slider-field"><span>Out point</span><input id="clip-end-range" type="range" min="1" max="30" step="1" value="30" aria-label="Set clip end"><span id="clip-end-range-label">00:00:30</span></label></div>
+        <p class="clip-range-summary" id="clip-range-summary">Clips can be up to 30 minutes long.</p>
+        <div class="clip-export-row"><span>MP4 output · Only clip media you have permission to use.</span><button id="clip-export" class="analyze-button" type="button"><span>Make clip</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <div id="clip-progress-wrap" class="clip-progress-wrap" hidden><div class="clip-progress-meta"><span id="clip-status-text">Preparing clip…</span><span id="clip-progress-label">0%</span></div><div class="job-progress" role="progressbar" aria-label="Clip export progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="clip-progress-bar"></span></div></div>
+        <div id="clip-complete" class="clip-complete" hidden><span>Clip saved to your computer.</span><button id="clip-reveal" class="job-button" type="button">Show in folder</button></div>
+        <button id="clip-cancel" class="job-button clip-cancel" type="button" hidden>Cancel export</button>
+      </div>
+    </section>
+    <section class="clipper-tool url-tool-panel" id="url-tool-panel" aria-labelledby="url-tool-heading" hidden>
+      <div class="clipper-heading">
+        <span class="tool-icon" aria-hidden="true"><svg id="url-tool-icon" viewBox="0 0 24 24"><path d="M4 7V4h3m10 0h3v3M4 17v3h3m10 0h3v-3M8 12h8m-4-4v8"/></svg></span>
+        <div><h2 id="url-tool-heading">Compress video</h2><p id="url-tool-copy">Reduce file size and save an MP4 copy.</p></div>
+      </div>
+      <div class="media-source-switch" role="group" aria-label="Media source"><button type="button" class="media-source-button active" aria-pressed="true" data-url-source="link">From a link</button><button type="button" class="media-source-button" aria-pressed="false" data-url-source="file">From your device</button></div>
+      <form id="url-tool-form" class="clip-link-form">
+        <label for="url-tool-url">Media link</label>
+        <div class="clip-url-row"><input id="url-tool-url" type="url" inputmode="url" placeholder="Paste a supported public media link" autocomplete="url" required><button id="url-tool-load" class="analyze-button" type="submit"><span>Load link</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <p class="clip-file-hint">Xovra processes the link with the local engine. It does not upload your media to a Xovra server.</p>
+      </form>
+      <form id="url-tool-file-form" class="clip-file-form" hidden>
+        <label for="url-tool-file">Choose an audio or video file</label>
+        <div class="clip-file-row"><input id="url-tool-file" type="file" accept="video/*,audio/*,.mp4,.m4v,.mov,.mkv,.webm,.avi,.mp3,.m4a,.aac,.flac,.wav,.ogg,.opus,.wma,.aiff,.alac" required><button id="url-tool-file-load" class="analyze-button" type="submit"><span>Use this file</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <p class="clip-file-hint">Choose a file up to 4 GB. Processing stays on this device.</p>
+      </form>
+      <p id="url-tool-message" class="clip-message" role="status" aria-live="polite" hidden></p>
+      <div id="url-tool-workspace" class="clip-workspace" hidden>
+        <div class="clip-link-summary"><img id="url-tool-thumbnail" alt="" hidden><div><span id="url-tool-provider" class="clip-provider"></span><strong id="url-tool-name"></strong><span id="url-tool-duration"></span></div></div>
+        <div id="url-tool-options" class="url-tool-options">
+          <label class="clip-time-field" data-option="compress"><span>Compression level</span><select id="compress-quality"><option value="smaller">Smaller file</option><option value="balanced" selected>Balanced</option><option value="higher">Higher quality</option></select></label>
+          <label class="clip-time-field" data-option="convert"><span>Convert to</span><select id="convert-format"><option value="mp4">MP4</option><option value="webm">WebM</option><option value="mov">MOV</option><option value="mkv">MKV</option></select></label>
+          <label class="clip-time-field" data-option="audio"><span>Audio format</span><select id="audio-format"><option value="mp3">MP3</option><option value="m4a">M4A</option><option value="opus">Opus</option><option value="wav">WAV</option><option value="flac">FLAC</option></select></label>
+        </div>
+        <div class="clip-export-row"><span id="url-tool-output-note">MP4 output · Only process media you have permission to use.</span><button id="url-tool-run" class="analyze-button" type="button"><span>Compress video</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <div id="url-tool-progress-wrap" class="clip-progress-wrap" hidden><div class="clip-progress-meta"><span id="url-tool-status-text">Preparing link…</span><span id="url-tool-progress-label">0%</span></div><div class="job-progress" role="progressbar" aria-label="Media tool progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="url-tool-progress-bar"></span></div></div>
+        <div id="url-tool-complete" class="clip-complete" hidden><span id="url-tool-complete-text">Your file is ready.</span><button id="url-tool-reveal" class="job-button" type="button">Show in folder</button></div>
+        <button id="url-tool-cancel" class="job-button clip-cancel" type="button" hidden>Cancel</button>
+      </div>
+    </section>
+    </div>
+  </template>
+  <dialog id="connect-dialog" class="connect-dialog" aria-labelledby="connect-title"><button class="dialog-close" id="close-connect" type="button" aria-label="Close">×</button><div class="dialog-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg></div><h2 id="connect-title">Connect the local engine</h2><p id="connect-dialog-copy">The local engine needs yt-dlp and FFmpeg. Xovra runs them on this device and shows the formats the source actually provides.</p><div class="setup-command" id="engine-setup-command"><span>One-time setup</span><code>npm run setup:engine</code></div><p class="engine-note" id="engine-note">FFmpeg and FFprobe must be installed and available on your PATH. No private or DRM-protected content is supported.</p><button class="dialog-primary" type="button" id="connect-settings">Open settings</button></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
