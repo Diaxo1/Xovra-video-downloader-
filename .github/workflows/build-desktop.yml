@@ -1,6 +1,8 @@
 name: Build Xovra desktop installers
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
