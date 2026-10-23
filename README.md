@@ -40,4 +40,4 @@ Xovra includes yt-dlp, FFmpeg, and FFprobe. Their notices and any license files 
 
 ## Building installers
 
-The workflow can be run manually to create temporary build artifacts. Pushing a `v*` tag builds the Windows x64 and Linux x64 installers, then attaches them to a GitHub Release with SHA-256 checksums. The current package version is `0.1.0`.
+The workflow can be run manually to create temporary build artifacts. Pushing a `v*` tag builds the Windows x64 and Linux x64 installers, then attaches them to a GitHub Release with SHA-256 checksums. The current package version is `0.1.1`.
