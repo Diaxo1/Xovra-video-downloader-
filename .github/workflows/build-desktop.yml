@@ -58,6 +58,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v4
+
       - name: Download platform build artifacts
         uses: actions/download-artifact@v4
         with:
