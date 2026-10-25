@@ -1,6 +1,6 @@
 # Xovra
 
-Xovra is a desktop media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio.
+Xovra is a free desktop media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio. Xovra has zero ads.
 
 ## Source availability
 
@@ -43,7 +43,3 @@ Available formats depend on the source and the media it provides. Xovra does not
 ## Third-party software
 
 Xovra includes yt-dlp, FFmpeg, and FFprobe. Their notices and any license files supplied with the build are included with the application. FFmpeg redistribution terms depend on the exact bundled build; see the included notice file for the build details and related source links.
-
-## Building installers
-
-The workflow can be run manually to create temporary build artifacts. Pushing a `v*` tag builds the Windows x64 and Linux x64 installers, then attaches them to a GitHub Release with SHA-256 checksums. The current package version is `0.1.2`.
