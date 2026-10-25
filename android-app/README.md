@@ -8,7 +8,7 @@ The Android app embeds yt-dlp as a Python package through the MIT-licensed Chaqu
 
 Install Android Studio with Android SDK 36 and JDK 17, then open this `android-app` folder. Build the `app` debug APK from Android Studio. The app supports current 64-bit Android devices (arm64-v8a) and x86_64 emulators, Android 10 / API 29 and newer.
 
-The project’s Android preview workflow also builds a debug APK when Android files change and uploads it as a short-lived GitHub Actions artifact. This is for development only, not a public app release.
+Android preview builds are published as a separate GitHub prerelease: [Xovra Android Preview](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-preview-0.1.0). Download `Xovra-Android-0.1.0-preview.apk` from its Assets section. It is debug-signed and intended for testing; Android may ask you to allow installs from your browser. Because preview builds do not yet share a stable signing key, future updates may require uninstalling the previous preview first.
 
 ## Current preview limits
 
@@ -21,5 +21,5 @@ Downloads are copied into `Downloads/Xovra` using Android's Downloads collection
 
 ## Publishing
 
-No APK is published yet. A stable Android signing key is required before publishing installs that can be updated over an existing copy. Keep that key out of Git and back it up securely. After the app scope and signing are ready, build a release APK or Play Store AAB, attach it to a GitHub Release, and link it from the Xovra website.
+The public Android preview is not the stable release. Before publishing an updateable release APK or Play Store AAB, configure a stable signing key, keep it out of Git, and back it up securely.
 
