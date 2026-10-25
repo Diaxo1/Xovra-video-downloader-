@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -245,7 +244,6 @@ private fun XovraScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = palette.background,
-        contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
             Row(
                 Modifier.fillMaxWidth().background(palette.surface).padding(horizontal = 12.dp, vertical = 8.dp).navigationBarsPadding(),
@@ -281,6 +279,7 @@ private fun XovraScreen(
                     selectedSource = selectedSource,
                     onSourceSelect = { source -> selectedSource = source; manualSource = source != "auto" },
                     history = history, media = media, selectedFormat = selectedFormat,
+                    onFormatSelect = { selectedFormat = it },
                     loading = loading, downloading = downloading, message = message, savedMessage = savedMessage,
                     onAnalyze = {
                         if (url.isBlank()) { message = "Paste a link first."; return@AnalyzerPage }
@@ -342,12 +341,11 @@ private fun HeaderAction(icon: String, label: String, palette: Palette, onClick:
 @Composable
 private fun AnalyzerPage(
     palette: Palette, url: String, onUrlChange: (String) -> Unit, selectedSource: String, onSourceSelect: (String) -> Unit,
-    history: List<String>, media: MediaItem?, selectedFormat: String?, loading: Boolean, downloading: Boolean,
+    history: List<String>, media: MediaItem?, selectedFormat: String?, onFormatSelect: (String) -> Unit, loading: Boolean, downloading: Boolean,
     message: String?, savedMessage: String?, onAnalyze: () -> Unit, onDownload: () -> Unit,
     onClearHistory: () -> Unit, onUseLink: (String) -> Unit
 ) {
     val currentMedia = media
-    val onSelectFormat: (String) -> Unit = { formatId -> selectedFormat = formatId }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 27.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
         item {
             Column(Modifier.padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -421,7 +419,7 @@ private fun AnalyzerPage(
                 }
             }
         }
-        if (currentMedia != null) item { FormatsSection(currentMedia, selectedFormat, palette, downloading, onSelectFormat, onDownload) }
+        if (currentMedia != null) item { FormatsSection(currentMedia, selectedFormat, palette, downloading, onFormatSelect, onDownload) }
         item { RecentSection(history, media, palette, onClearHistory, onUseLink) }
         item { WorkspaceDetails(palette) }
     }
