@@ -343,11 +343,17 @@
   <script>
     const root = document.documentElement;
     const themeButton = document.querySelector(".theme-toggle");
+    const themeColor = document.querySelector('meta[name="theme-color"]');
     const storedTheme = localStorage.getItem("xovra-site-theme");
     if (storedTheme === "light") root.dataset.theme = "light";
+    const syncThemeColor = () => {
+      themeColor.content = root.dataset.theme === "dark" ? "#151812" : "#f2f1e7";
+    };
+    syncThemeColor();
     themeButton.addEventListener("click", () => {
       const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
       root.dataset.theme = nextTheme;
+      syncThemeColor();
       localStorage.setItem("xovra-site-theme", nextTheme);
       themeButton.setAttribute("aria-label", nextTheme === "dark" ? "Switch to light theme" : "Switch to dark theme");
     });
