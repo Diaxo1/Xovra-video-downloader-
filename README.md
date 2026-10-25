@@ -1,6 +1,6 @@
 # Xovra
 
-Xovra is a free desktop media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio. Xovra has zero ads.
+Xovra is a free media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio. Xovra has zero ads.
 
 ## Source availability
 
@@ -8,10 +8,11 @@ This source is published for inspection only; Xovra is not an open-source projec
 
 ## Download
 
-Download the latest version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
+Download the latest desktop version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
 
 - **Windows x64:** use the latest `Xovra-<version>-Setup.exe` branded installer or the matching `.msi` package.
 - **Linux x64:** use `.deb` for Debian or Ubuntu, or `.rpm` for Fedora and other RPM-based distributions.
+- **Android:** the native app is in development. See [android-app](android-app/README.md) for the current preview scope. No installable Android release is published yet.
 
 If Xovra 0.1.1 is installed, uninstall it before installing 0.1.2 or newer. Later versions can be installed over 0.1.2 and newer.
 
@@ -23,7 +24,7 @@ The installed desktop app checks GitHub Releases for a newer version when it sta
 
 The version check requests public release information from GitHub only; it does not send your links or media.
 
-## The media engine is included
+## The desktop media engine is included
 
 The desktop installers bundle the matching yt-dlp, FFmpeg, and FFprobe programs. They are installed with Xovra, so you do not need Node.js, a separate engine setup, or a system-wide FFmpeg installation.
 
@@ -37,7 +38,7 @@ Xovra processes media on your computer. It does not send media files through an 
 
 Available formats depend on the source and the media it provides. Xovra does not access private posts or bypass DRM or other access protections. Only download media you have permission to use.
 
-## Included tools
+## Included desktop tools
 
 - Analyze a media link and choose among available video and audio formats.
 - Download supported media links.
@@ -48,4 +49,4 @@ Available formats depend on the source and the media it provides. Xovra does not
 
 ## Third-party software
 
-Xovra includes yt-dlp, FFmpeg, and FFprobe. Their notices and any license files supplied with the build are included with the application. FFmpeg redistribution terms depend on the exact bundled build; see the included notice file for the build details and related source links.
+The desktop app includes yt-dlp, FFmpeg, and FFprobe. Their notices and any license files supplied with a release are included with the application. FFmpeg redistribution terms depend on the exact bundled build; see the included notice file for build details and source links. Android third-party components are listed in [android-app/THIRD-PARTY-NOTICES.md](android-app/THIRD-PARTY-NOTICES.md).

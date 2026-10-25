@@ -4,3 +4,9 @@ engine/THIRD-PARTY-NOTICES.txt
 engine/*-LICENSE.txt
 node_modules/
 out/
+node_modules/
+.gradle/
+local.properties
+**/build/
+*.jks
+*.keystore

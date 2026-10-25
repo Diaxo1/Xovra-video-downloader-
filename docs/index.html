@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#151812">
-  <meta name="description" content="Xovra is a local-first desktop workspace to download, clip, convert, and extract audio from supported media links and files.">
+  <meta name="description" content="Xovra is a free, ad-free media workspace for Windows and Linux, with an Android app in development.">
   <meta property="og:title" content="Xovra — Your media. Your call.">
-  <meta property="og:description" content="A desktop media workspace for Windows and Linux.">
+  <meta property="og:description" content="A local-first media workspace for Windows, Linux, and Android in development.">
   <meta property="og:type" content="website">
   <title>Xovra — Your media. Your call.</title>
   <link rel="icon" type="image/png" href="assets/xovra-icon.png">
@@ -140,7 +140,7 @@
     .step h3 { margin: 14px 0 7px; font-size: 20px; letter-spacing: -.04em; }
     .step p { margin: 0; color: var(--muted); font-size: 14px; }
     .downloads { padding: 56px 0 86px; }
-    .download-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .download-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
     .download-card { display: flex; flex-direction: column; align-items: flex-start; padding: 23px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
     .download-card h3 { margin: 7px 0 5px; font-size: 19px; letter-spacing: -.04em; }
     .download-card p { flex: 1; margin: 0 0 20px; color: var(--muted); font-size: 14px; }
@@ -227,14 +227,14 @@
         <div>
           <div class="eyebrow">The media desk</div>
           <h1>Your media.<br><span>Your call.</span></h1>
-          <p class="hero-copy">Download, clip, convert, and extract audio from supported links and files—all from one desktop workspace.</p>
+          <p class="hero-copy">Download, clip, convert, and extract audio from supported links and files on Windows and Linux. An on-device Android app is in development.</p>
           <div class="hero-actions">
             <a class="button" href="#downloads">Get Xovra for desktop
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
             </a>
             <a class="button ghost" href="https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest" target="_blank" rel="noopener noreferrer">Latest release</a>
           </div>
-          <div class="hero-facts"><span><i></i>Windows &amp; Linux</span><span><i></i>Media stays on your device</span></div>
+          <div class="hero-facts"><span><i></i>Windows &amp; Linux</span><span><i></i>Android in development</span><span><i></i>Media stays on your device</span></div>
         </div>
         <div class="hero-image-wrap">
           <div class="frame">
@@ -325,13 +325,14 @@
     <section class="downloads" id="downloads">
       <div class="wrap">
         <div class="section-head">
-          <div><div class="eyebrow">Get Xovra</div><h2>Desktop, ready.</h2></div>
-          <p>Choose the package for your system on the latest release page.</p>
+          <div><div class="eyebrow">Get Xovra</div><h2>Choose your device.</h2></div>
+          <p>Desktop packages are ready. The Android app is being built for on-device downloads.</p>
         </div>
         <div class="download-grid">
           <article class="download-card"><div class="download-label">Windows x64</div><h3>Windows setup</h3><p>Branded setup installer. Windows may show a publisher warning while the app is unsigned.</p><a class="button" href="https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest" target="_blank" rel="noopener noreferrer">See Windows downloads</a></article>
           <article class="download-card"><div class="download-label">Debian / Ubuntu</div><h3>Linux .deb</h3><p>Install the package for Debian, Ubuntu, and other .deb-based distributions.</p><a class="button ghost" href="https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest" target="_blank" rel="noopener noreferrer">See .deb download</a></article>
           <article class="download-card"><div class="download-label">Fedora / RPM</div><h3>Linux .rpm</h3><p>Install the package for Fedora and other RPM-based distributions.</p><a class="button ghost" href="https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest" target="_blank" rel="noopener noreferrer">See .rpm download</a></article>
+          <article class="download-card"><div class="download-label">Android · In development</div><h3>Xovra for Android</h3><p>The first Android build is being developed with on-device link analysis and downloads. APK coming after the mobile engine and signing are ready.</p><a class="button ghost" href="https://github.com/Diaxo1/Xovra-video-downloader-/tree/main/android-app" target="_blank" rel="noopener noreferrer">View Android progress</a></article>
         </div>
         <p class="download-note">Only download media you have permission to use. Xovra does not bypass private access or DRM.</p>
       </div>
