@@ -55,8 +55,8 @@ jobs:
           $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
           if (-not (Test-Path $iscc)) { throw "Inno Setup compiler not found at $iscc" }
           $version = (Get-Content 'package.json' -Raw | ConvertFrom-Json).version
-          $versionDefine = "--define=AppVersion=`"$version`""
-          & $iscc $versionDefine 'installer\windows.iss'
+          '#define AppVersion "' + $version + '"' | Set-Content 'installer\version.iss' -Encoding utf8NoBOM
+          & $iscc 'installer\windows.iss'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
