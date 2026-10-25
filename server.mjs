@@ -19,6 +19,10 @@ const MAX_BODY = 64 * 1024;
 const MAX_ANALYSES = 3;
 const MAX_QUEUE = 40;
 const DOWNLOAD_CONCURRENCY = 2;
+const APP_VERSION = process.env.XOVRA_APP_VERSION || process.env.npm_package_version || '0.1.2';
+const LATEST_RELEASE_API = 'https://api.github.com/repos/Diaxo1/Xovra-video-downloader-/releases/latest';
+const RELEASE_PAGE = 'https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest';
+let updateCache = { expiresAt: 0, value: null };
 const ANALYSIS_TIMEOUT = 90_000;
 const DOWNLOAD_TIMEOUT = 6 * 60 * 60 * 1000;
 const rootDirs = {
@@ -749,6 +753,41 @@ function localRequest(req) {
   return true;
 }
 
+function numericVersion(value) {
+  const match = String(value || '').replace(/^v/i, '').match(/^(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?$/);
+  return match ? match.slice(1, 4).map(Number) : null;
+}
+
+function isNewerVersion(latest, current) {
+  const a = numericVersion(latest);
+  const b = numericVersion(current);
+  if (!a || !b) return false;
+  for (let i = 0; i < 3; i++) {
+    if (a[i] !== b[i]) return a[i] > b[i];
+  }
+  return false;
+}
+
+async function getAppUpdateInfo() {
+  const currentVersion = APP_VERSION.replace(/^v/i, '');
+  if (updateCache.expiresAt > Date.now() && updateCache.value) return updateCache.value;
+  try {
+    const response = await fetch(LATEST_RELEASE_API, {
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'Xovra-desktop' },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (!response.ok) throw new Error(`GitHub returned ${response.status}`);
+    const release = await response.json();
+    const latestVersion = String(release.tag_name || '').replace(/^v/i, '');
+    if (!numericVersion(latestVersion)) throw new Error('Latest release tag has no valid version.');
+    const value = { currentVersion, latestVersion, updateAvailable: isNewerVersion(latestVersion, currentVersion), releaseUrl: RELEASE_PAGE };
+    updateCache = { expiresAt: Date.now() + 6 * 60 * 60 * 1000, value };
+    return value;
+  } catch {
+    return { currentVersion, latestVersion: null, updateAvailable: false, releaseUrl: null };
+  }
+}
+
 async function readJson(req) {
   const contentType = req.headers['content-type'] || '';
   if (!contentType.toLowerCase().includes('application/json')) throw fail(415, 'Send a JSON request body.', 'invalid_content_type');
@@ -765,6 +804,7 @@ async function readJson(req) {
 async function handleApi(req, res, pathname) {
   if (!localRequest(req)) return json(res, 403, { error: 'This local engine only accepts requests from Xovra.', code: 'origin_rejected' });
   if (req.method === 'GET' && pathname === '/api/status') return json(res, 200, await engineStatus());
+  if (req.method === 'GET' && pathname === '/api/update') return json(res, 200, await getAppUpdateInfo());
   if (req.method === 'GET' && pathname === '/api/jobs') return json(res, 200, { jobs: [...jobs.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100) });
   if (req.method === 'POST' && pathname === '/api/media/upload') return json(res, 201, await receiveMediaUpload(req));
   if (req.method === 'POST' && pathname === '/api/analyze') {

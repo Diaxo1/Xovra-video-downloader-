@@ -10,12 +10,18 @@ This source is published for inspection only; Xovra is not an open-source projec
 
 Download the latest version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
 
-- **Windows x64:** use `Xovra-0.1.2-Setup.exe` for the branded installer, or the `.msi` package.
+- **Windows x64:** use the latest `Xovra-<version>-Setup.exe` branded installer or the matching `.msi` package.
 - **Linux x64:** use `.deb` for Debian or Ubuntu, or `.rpm` for Fedora and other RPM-based distributions.
 
-If you have Xovra 0.1.1 installed, uninstall it before installing 0.1.2; the new installer uses a different installation path.
+If Xovra 0.1.1 is installed, uninstall it before installing 0.1.2 or newer. Later versions can be installed over 0.1.2 and newer.
 
 Current Windows builds are unsigned and may show an Unknown Publisher or SmartScreen warning. Check that the installer came from this repository before running it.
+
+## App updates
+
+The installed desktop app checks GitHub Releases for a newer version when it starts. If one is available, Xovra shows a notice with a link to download it. Updates are not installed silently: download the matching Windows or Linux package and run/install it to upgrade. Your downloaded media and local history stay on your device.
+
+The version check requests public release information from GitHub only; it does not send your links or media.
 
 ## The media engine is included
 

@@ -124,6 +124,14 @@ html[data-engine="offline"] .status-dot, html[data-engine="missing"] .status-dot
 .banner-dot { display: none; }
 .engine-banner p { flex: 1; margin: 0; color: var(--amber-ink); font-size: 14px; }
 .engine-banner strong { font-weight: 650; }
+.update-banner { display: flex; align-items: center; gap: 12px; margin: 12px 56px 0; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--accent) 43%, var(--line)); border-radius: 14px; background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid)); color: var(--ink); }
+.update-mark { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.update-banner p { flex: 1; margin: 0; color: var(--muted); font-size: 14px; }
+.update-banner p strong { display: block; color: var(--ink); font-size: 15px; }
+.update-link { display: inline-flex; min-height: 40px; align-items: center; padding: 0 14px; border-radius: 11px; background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 650; text-decoration: none; }
+.update-link:hover { background: var(--accent-hover); }
+.update-dismiss { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--muted); font-size: 21px; cursor: pointer; }
+.update-dismiss:hover { color: var(--ink); background: var(--surface); }
 .connect-button { min-height: 40px; padding: 0 14px; border: 1px solid color-mix(in srgb, #bf9650 45%, var(--line)); border-radius: 12px; background: transparent; color: var(--amber-ink); font-size: 14px; font-weight: 600; cursor: pointer; }
 .connect-button:hover { background: color-mix(in srgb, #bf9650 14%, transparent); box-shadow: var(--shadow-chip); }
 
@@ -233,8 +241,10 @@ html[data-engine="offline"] .status-dot, html[data-engine="missing"] .status-dot
 .job-details { min-width: 0; display: grid; gap: 3px; }
 .job-details strong { overflow: hidden; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }
 .job-details span, .download-path, .job-stats { color: var(--muted); font-size: 14px; }
-.job-progress { height: 8px; grid-column: 1 / -1; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--line) 75%, transparent); box-shadow: var(--shadow-inset); }
+.job-progress { position: relative; height: 8px; grid-column: 1 / -1; overflow: hidden; border-radius: 99px; background: color-mix(in srgb, var(--line) 75%, transparent); box-shadow: var(--shadow-inset); }
 .job-progress span { height: 100%; display: block; border-radius: inherit; background: var(--accent); transition: width .3s; }
+.job-progress.indeterminate span { position: absolute; left: 0; width: 28%; animation: job-progress-slide 1.35s ease-in-out infinite; }
+@keyframes job-progress-slide { from { transform: translateX(-105%); } to { transform: translateX(365%); } }
 .job-stats { grid-column: 1; }
 .job-button { min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-solid); color: var(--ink); font-size: 14px; cursor: pointer; }
 .job-button:hover { box-shadow: var(--shadow-chip); }
@@ -371,6 +381,10 @@ html[data-engine="offline"] .status-dot, html[data-engine="missing"] .status-dot
   .page-view h1 { gap: 0 10px; font-size: 44px; line-height: 1.06; letter-spacing: -2.5px; }
   .intro-copy { max-width: 36ch; margin-top: 12px; font-size: 14px; line-height: 1.5; }
   .engine-banner { align-items: flex-start; margin: 0 0 12px; padding: 10px; }
+  .update-banner { align-items: flex-start; margin: 10px 16px 0; padding: 10px; }
+  .update-banner p { font-size: 13px; }
+  .update-link { min-height: 38px; padding-inline: 10px; }
+  .update-dismiss { width: 34px; height: 34px; flex: 0 0 auto; }
   .engine-banner p { font-size: 14px; }
   .connect-button { min-height: 44px; padding: 0 10px; }
   .engine-banner[hidden] + .analyzer-board { margin-top: 0; }
@@ -487,6 +501,7 @@ html[data-engine="offline"] .status-dot, html[data-engine="missing"] .status-dot
 }
 @media(prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .job-progress.indeterminate span { left: 36%; animation: none !important; }
 }
 
 /* Xovra app icon: let the supplied sculpted mark carry the depth. */

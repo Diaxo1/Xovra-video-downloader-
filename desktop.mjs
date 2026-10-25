@@ -50,6 +50,7 @@ if (!app.requestSingleInstanceLock()) {
   }
 
   app.whenReady().then(async () => {
+    process.env.XOVRA_APP_VERSION = app.getVersion();
     process.env.XOVRA_DESKTOP = '1';
     process.env.XOVRA_ENGINE_DIR = app.isPackaged
       ? path.join(process.resourcesPath, 'engine', 'bin')

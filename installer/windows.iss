@@ -1,5 +1,7 @@
 #define AppName "Xovra"
-#define AppVersion "0.1.2"
+#ifndef AppVersion
+#define AppVersion "0.1.3"
+#endif
 #define AppPublisher "Xovra"
 #define AppExeName "xovra.exe"
 #define AppSourceDir "..\out\Xovra-win32-x64"

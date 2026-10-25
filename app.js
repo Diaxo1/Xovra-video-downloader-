@@ -347,7 +347,11 @@ function addButton(container, text, onClick, className = 'connect-button') {
 
 let latestJobs = [];
 function downloadStatusLabel(job) {
-  if (job.status === 'downloading') return `Downloading${Number.isFinite(job.progress) ? ` · ${Math.round(job.progress)}%` : ''}`;
+  if (job.status === 'downloading') {
+    const progress = Number(job.progress) || 0;
+    if (progress <= 0 && !job.speed) return 'Connecting to source…';
+    return `Downloading · ${Math.round(progress)}%`;
+  }
   if (job.status === 'processing') return job.statusText || 'Preparing file';
   if (job.status === 'completed') return 'Complete';
   if (job.status === 'failed') return 'Failed';
@@ -361,8 +365,13 @@ function makeJobRow(job) {
   const meta = document.createElement('span'); meta.textContent = `${sourceNames[sourceFromUrl(job.url)] || 'Media'} · ${job.mode === 'audio' ? 'Audio' : 'Video'} · ${downloadStatusLabel(job)}`;
   details.append(title, meta); row.append(details);
   if (['queued', 'downloading', 'processing'].includes(job.status)) {
-    const progress = document.createElement('div'); progress.className = 'job-progress'; progress.setAttribute('role', 'progressbar'); progress.setAttribute('aria-valuemin', '0'); progress.setAttribute('aria-valuemax', '100'); progress.setAttribute('aria-valuenow', String(Math.round(job.progress || 0)));
-    const bar = document.createElement('span'); bar.style.width = `${Math.max(3, Math.min(100, job.progress || 0))}%`; progress.append(bar); row.append(progress);
+    const progress = document.createElement('div'); progress.className = 'job-progress'; progress.setAttribute('role', 'progressbar'); progress.setAttribute('aria-valuemin', '0'); progress.setAttribute('aria-valuemax', '100');
+    const indeterminate = job.status === 'downloading' && !(Number(job.progress) > 0);
+    if (indeterminate) { progress.classList.add('indeterminate'); progress.setAttribute('aria-valuetext', 'Connecting to source'); }
+    else { progress.setAttribute('aria-valuenow', String(Math.round(job.progress || 0))); }
+    const bar = document.createElement('span');
+    if (!indeterminate) bar.style.width = `${Math.max(3, Math.min(100, job.progress || 0))}%`;
+    progress.append(bar); row.append(progress);
     const stats = document.createElement('span'); stats.className = 'job-stats'; stats.textContent = [job.speed, job.eta ? `ETA ${job.eta}` : null].filter(Boolean).join(' · '); row.append(stats);
     addButton(row, 'Cancel', () => cancelJob(job.id), 'job-button');
   } else if (job.status === 'completed') addButton(row, 'Show in folder', () => revealJob(job.id), 'job-button');
@@ -937,9 +946,23 @@ function setEngineUi(status, online = true) {
     ? 'The Xovra media engine is installed and ready on this device.'
     : 'yt-dlp and FFmpeg are available. Paste a public media link and Xovra will show the formats returned by its source.';
 }
+async function checkForAppUpdate(status) {
+  if (!status?.desktop) return;
+  try {
+    const update = await api('/update', { signal: AbortSignal.timeout(7000) });
+    if (!update.updateAvailable || !update.releaseUrl) return;
+    $('#update-banner-copy').textContent = `Version ${update.latestVersion} is ready. You have ${update.currentVersion}; install the new package to update.`;
+    $('#update-banner-link').href = update.releaseUrl;
+    $('#update-banner').hidden = false;
+  } catch { /* update checks are optional and should not interrupt app use */ }
+}
+$('#dismiss-update').addEventListener('click', () => { $('#update-banner').hidden = true; });
 async function refreshEngineStatus() {
-  try { const status = await api('/status', { signal: AbortSignal.timeout(7000) }); setEngineUi(status, true); }
-  catch { setEngineUi(null, false); }
+  try {
+    const status = await api('/status', { signal: AbortSignal.timeout(7000) });
+    setEngineUi(status, true);
+    void checkForAppUpdate(status);
+  } catch { setEngineUi(null, false); }
 }
 function openConnect() { $('#connect-dialog').showModal(); }
 
