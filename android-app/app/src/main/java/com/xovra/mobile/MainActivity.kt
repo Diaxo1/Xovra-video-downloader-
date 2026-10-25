@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -418,7 +419,7 @@ private fun AnalyzerPage(
                 }
             }
         }
-        if (media != null) item { FormatsSection(media, selectedFormat, palette, downloading, { selectedFormat = it }, onDownload) }
+        if (currentMedia != null) item { FormatsSection(currentMedia, selectedFormat, palette, downloading, onSelectFormat, onDownload) }
         item { RecentSection(history, media, palette, onClearHistory, onUseLink) }
         item { WorkspaceDetails(palette) }
     }
