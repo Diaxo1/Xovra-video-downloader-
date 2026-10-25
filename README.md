@@ -2,6 +2,10 @@
 
 Xovra is a desktop media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio.
 
+## Source availability
+
+This source is published for inspection only; Xovra is not an open-source project. All rights reserved. No license is granted to use, modify, redistribute, or incorporate this code beyond the limited rights provided by GitHub's Terms of Service for viewing and forking public repositories. Contact the project owner for other permissions.
+
 ## Download
 
 Download the latest version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
