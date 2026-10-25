@@ -346,6 +346,8 @@ private fun AnalyzerPage(
     message: String?, savedMessage: String?, onAnalyze: () -> Unit, onDownload: () -> Unit,
     onClearHistory: () -> Unit, onUseLink: (String) -> Unit
 ) {
+    val currentMedia = media
+    val onSelectFormat: (String) -> Unit = { formatId -> selectedFormat = formatId }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 27.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
         item {
             Column(Modifier.padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
