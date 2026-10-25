@@ -488,3 +488,10 @@ html[data-engine="offline"] .status-dot, html[data-engine="missing"] .status-dot
 @media(prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Xovra app icon: let the supplied sculpted mark carry the depth. */
+.brand-mark { overflow: hidden; border: 0; border-radius: 12px; background: transparent; box-shadow: none; }
+.brand-mark img { width: 38px; height: 38px; object-fit: contain; }
+.hero-mark-recess, .hero-mark-sparkle { display: none; }
+.hero-mark-glyph { width: 148px; height: 148px; border: 0; border-radius: 0; background: transparent; box-shadow: none; transform: none; }
+.hero-mark-glyph img { width: 148px; height: 148px; object-fit: contain; }

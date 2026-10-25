@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#f2f1e7">
   <meta name="description" content="Analyze media links and choose an available format.">
   <title>Xovra — your media, your call</title>
-  <link rel="icon" type="image/svg+xml" href="assets/xovra-mark.svg">
+  <link rel="icon" type="image/png" href="assets/xovra-icon.png">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Main navigation">
-      <a class="brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-mark.svg" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
+      <a class="brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-icon.png" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
       <p class="nav-heading">Workspace</p>
       <nav class="nav-list" aria-label="Workspace">
         <button class="nav-item active" type="button" data-page="analyzer" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg><span>Analyzer</span></button>
@@ -30,7 +30,7 @@
     <main class="main-area">
       <header class="topbar">
         <div class="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="breadcrumb-page">Analyzer</strong></div>
-        <a class="brand mobile-brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-mark.svg" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
+        <a class="brand mobile-brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-icon.png" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
         <div class="topbar-utilities">
           <button class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></button>
           <button class="nav-item mobile-settings-shortcut" type="button" data-page="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19 13 2 1-2 4-2-1-2 1v2h-5v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V4h5v2l2 1 2-1 2 4-2 1z"/></svg></button>
@@ -38,7 +38,7 @@
       </header>
       <div class="page-wrap">
         <section id="analyzer-view" class="page-view" aria-labelledby="page-title">
-          <div class="intro"><p class="eyebrow">THE MEDIA DESK</p><h1 id="page-title"><span>Your media.</span><span class="headline-muted">Your call.</span></h1><p class="intro-copy">Choose a source, then pick from what that link actually offers.</p><div class="hero-mark" aria-hidden="true"><span class="hero-mark-recess"></span><span class="hero-mark-glyph"><img src="assets/xovra-mark.svg" alt=""></span><span class="hero-mark-sparkle"><svg viewBox="0 0 24 24"><path d="M12 2.5 14 9l6.5 2-6.5 2-2 6.5L10 13l-6.5-2L10 9z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span></div></div>
+          <div class="intro"><p class="eyebrow">THE MEDIA DESK</p><h1 id="page-title"><span>Your media.</span><span class="headline-muted">Your call.</span></h1><p class="intro-copy">Choose a source, then pick from what that link actually offers.</p><div class="hero-mark" aria-hidden="true"><span class="hero-mark-recess"></span><span class="hero-mark-glyph"><img src="assets/xovra-icon.png" alt=""></span><span class="hero-mark-sparkle"><svg viewBox="0 0 24 24"><path d="M12 2.5 14 9l6.5 2-6.5 2-2 6.5L10 13l-6.5-2L10 9z"/><path d="m19 15 .9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></span></div></div>
           <div class="engine-banner" id="engine-banner" role="status"><span class="banner-dot" aria-hidden="true"></span><p><strong id="engine-status-title">Local engine isn’t connected.</strong> <span id="engine-status-copy">Connect the local engine to analyze links and see available formats.</span></p><button type="button" id="connect-engine" class="connect-button">Connect</button></div>
 
           <div class="analyzer-board">

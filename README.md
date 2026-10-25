@@ -6,8 +6,10 @@ Xovra is a desktop media workspace for analyzing supported media links, download
 
 Download the latest version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
 
-- **Windows x64:** use `Xovra Setup.exe` for the standard installer, or the `.msi` package.
+- **Windows x64:** use `Xovra-0.1.2-Setup.exe` for the branded installer, or the `.msi` package.
 - **Linux x64:** use `.deb` for Debian or Ubuntu, or `.rpm` for Fedora and other RPM-based distributions.
+
+If you have Xovra 0.1.1 installed, uninstall it before installing 0.1.2; the new installer uses a different installation path.
 
 Current Windows builds are unsigned and may show an Unknown Publisher or SmartScreen warning. Check that the installer came from this repository before running it.
 
@@ -40,4 +42,4 @@ Xovra includes yt-dlp, FFmpeg, and FFprobe. Their notices and any license files 
 
 ## Building installers
 
-The workflow can be run manually to create temporary build artifacts. Pushing a `v*` tag builds the Windows x64 and Linux x64 installers, then attaches them to a GitHub Release with SHA-256 checksums. The current package version is `0.1.1`.
+The workflow can be run manually to create temporary build artifacts. Pushing a `v*` tag builds the Windows x64 and Linux x64 installers, then attaches them to a GitHub Release with SHA-256 checksums. The current package version is `0.1.2`.

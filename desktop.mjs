@@ -19,6 +19,7 @@ if (!app.requestSingleInstanceLock()) {
   async function openWindow() {
     mainWindow = new BrowserWindow({
       title: 'Xovra',
+      icon: path.join(APP_DIR, 'assets', process.platform === 'win32' ? 'xovra-icon.ico' : 'xovra-icon.png'),
       width: 1440,
       height: 960,
       minWidth: 920,
