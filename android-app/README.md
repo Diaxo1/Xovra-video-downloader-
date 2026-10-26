@@ -19,7 +19,16 @@ Android preview builds are published as a separate GitHub prerelease: [Xovra And
 
 Downloads are copied into `Downloads/Xovra` using Android's Downloads collection. Only download media you have permission to use. Xovra does not bypass private access or DRM.
 
-## Publishing
+## Publishing the stable Android release
 
-The public Android preview is not the stable release. Before publishing an updateable release APK or Play Store AAB, configure a stable signing key, keep it out of Git, and back it up securely.
+The stable APK is signed by a persistent upload key so future updates can install over it. The key is not in the repository. Before triggering `android-v0.1.1`, create a PKCS12 key with JDK `keytool`, then add these repository Actions secrets under **Settings → Secrets and variables → Actions**:
+
+- `ANDROID_KEYSTORE_BASE64`: Base64 of the `.jks` file.
+- `ANDROID_KEY_ALIAS`: the alias used when creating the key (`xovra-upload`).
+- `ANDROID_STORE_PASSWORD`: the keystore password.
+- `ANDROID_KEY_PASSWORD`: the key password.
+
+On Windows PowerShell, create the key with `keytool -genkeypair -v -keystore xovra-upload-key.jks -storetype PKCS12 -alias xovra-upload -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Xovra Android"`, then copy its Base64 value with `[Convert]::ToBase64String([IO.File]::ReadAllBytes("xovra-upload-key.jks")) | Set-Clipboard`. Use the exact password and alias chosen at key creation. Back up the `.jks` file and passwords securely in more than one place. Never commit them or paste them into chat.
+
+Once the four secrets are saved, the stable workflow can publish tag `android-v0.1.1`. Remove the debug preview before installing the first stable APK; after that, keep using the same signing key for every update. Losing or replacing the key prevents in-place updates for users.
 
