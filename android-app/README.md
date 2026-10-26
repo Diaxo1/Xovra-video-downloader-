@@ -8,7 +8,7 @@ The Android app embeds yt-dlp as a Python package through the MIT-licensed Chaqu
 
 Install Android Studio with Android SDK 36 and JDK 17, then open this `android-app` folder. Build the `app` debug APK from Android Studio. The app supports current 64-bit Android devices (arm64-v8a) and x86_64 emulators, Android 10 / API 29 and newer.
 
-Android preview builds are published as a separate GitHub prerelease: [Xovra Android Preview](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-preview-0.1.0). Download `Xovra-Android-0.1.0-preview.apk` from its Assets section. It is debug-signed and intended for testing; Android may ask you to allow installs from your browser. Because preview builds do not yet share a stable signing key, future updates may require uninstalling the previous preview first.
+The stable Android release is available at [Xovra Android 0.1.1](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.1). Download `Xovra-Android-0.1.1.apk` from its Assets section. If you installed the earlier debug preview, uninstall it before installing this first stable build. Android may ask you to allow installs from your browser.
 
 ## Current preview limits
 
@@ -21,7 +21,7 @@ Downloads are copied into `Downloads/Xovra` using Android's Downloads collection
 
 ## Publishing the stable Android release
 
-The stable APK is signed by a persistent upload key so future updates can install over it. The key is not in the repository. Before triggering `android-v0.1.1`, create a PKCS12 key with JDK `keytool`, then add these repository Actions secrets under **Settings → Secrets and variables → Actions**:
+The stable APK uses a persistent upload key so future updates can install over it. The key is not in the repository. To publish a later release, create/retain the PKCS12 key with JDK `keytool`, then keep these repository Actions secrets under **Settings → Secrets and variables → Actions**:
 
 - `ANDROID_KEYSTORE_BASE64`: Base64 of the `.jks` file.
 - `ANDROID_KEY_ALIAS`: the alias used when creating the key (`xovra-upload`).
@@ -30,5 +30,5 @@ The stable APK is signed by a persistent upload key so future updates can instal
 
 On Windows PowerShell, create the key with `keytool -genkeypair -v -keystore xovra-upload-key.jks -storetype PKCS12 -alias xovra-upload -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Xovra Android"`, then copy its Base64 value with `[Convert]::ToBase64String([IO.File]::ReadAllBytes("xovra-upload-key.jks")) | Set-Clipboard`. Use the exact password and alias chosen at key creation. Back up the `.jks` file and passwords securely in more than one place. Never commit them or paste them into chat.
 
-Once the four secrets are saved, the stable workflow can publish tag `android-v0.1.1`. Remove the debug preview before installing the first stable APK; after that, keep using the same signing key for every update. Losing or replacing the key prevents in-place updates for users.
+The stable workflow uses tags named `android-vMAJOR.MINOR.PATCH`; update the app version code and name before each new release. Remove the debug preview before installing the first stable APK; after that, keep using the same signing key for every update. Losing or replacing the key prevents in-place updates for users.
 
