@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,6 +7,45 @@ let engineServer;
 let mainWindow;
 let quitting = false;
 
+function setApplicationMenu() {
+  const developerToolsItem = app.isPackaged ? [] : [
+    { type: 'separator' },
+    { role: 'toggleDevTools' }
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    { label: 'File', submenu: [{ role: 'close' }] },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        ...developerToolsItem,
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    { role: 'windowMenu' }
+  ]));
+}
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -27,6 +66,7 @@ if (!app.requestSingleInstanceLock()) {
       show: false,
       backgroundColor: '#f4f1e6',
       webPreferences: {
+        devTools: !app.isPackaged,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: true
@@ -50,6 +90,7 @@ if (!app.requestSingleInstanceLock()) {
   }
 
   app.whenReady().then(async () => {
+    setApplicationMenu();
     process.env.XOVRA_APP_VERSION = app.getVersion();
     process.env.XOVRA_DESKTOP = '1';
     process.env.XOVRA_ENGINE_DIR = app.isPackaged
