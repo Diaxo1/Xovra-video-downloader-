@@ -1,6 +1,6 @@
-# Xovra
+# Xovra — Video URL Downloader
 
-Xovra is a free media workspace for analyzing supported media links, downloading available formats, clipping videos, converting files, and extracting audio. Xovra has zero ads.
+Xovra is a free, ad-free video URL downloader and media utility for Windows, Linux, and Android. Paste a supported public video or audio URL to check available formats and download it. On desktop, you can also clip videos, convert or compress files, and extract audio. Xovra has zero ads.
 
 ## Source availability
 
@@ -8,7 +8,7 @@ This source is published for inspection only; Xovra is not an open-source projec
 
 ## Download
 
-Download the latest desktop version from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
+Download the latest desktop version (currently 0.1.4) from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
 
 - **Windows x64:** use the latest `Xovra-<version>-Setup.exe` branded installer or the matching `.msi` package.
 - **Linux x64:** use `.deb` for Debian or Ubuntu, or `.rpm` for Fedora and other RPM-based distributions.
