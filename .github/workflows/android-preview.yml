@@ -2,7 +2,7 @@ name: Build Xovra Android preview
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/android-check"]
     paths:
       - "android-app/**"
       - ".github/workflows/android-preview.yml"

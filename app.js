@@ -435,13 +435,14 @@ function clipRangeUi(root) {
     $('#clip-end-range-label', root).textContent = formatClipTime(end);
   }
   const length = start === null || end === null ? null : end - start;
-  const valid = Number.isFinite(start) && Number.isFinite(end) && start >= 0 && end > start && end <= duration && length <= 1800;
+  const maxLength = $('#clip-output-format', root).value === 'gif' ? 15 : 1800;
+  const valid = Number.isFinite(start) && Number.isFinite(end) && start >= 0 && end > start && end <= duration && length <= maxLength;
   if (valid) { clipState.start = start; clipState.end = end; }
   $('#clip-range-summary', root).textContent = start === null || end === null
     ? 'Enter a time like 00:01:25 (hours:minutes:seconds).'
     : length <= 0 ? 'The end time must come after the start time.'
       : end > duration ? 'The end time must be within the video.'
-        : length > 1800 ? 'A clip can be up to 30 minutes long.'
+        : length > maxLength ? ($('#clip-output-format', root).value === 'gif' ? 'GIF clips can be up to 15 seconds.' : 'A clip can be up to 30 minutes long.')
           : `Selected clip: ${durationLabel(length)} · ${formatClipTime(start)} to ${formatClipTime(end)}`;
   return { valid, start, end };
 }
@@ -484,6 +485,12 @@ function clipProgressUi(root) {
     }
   }
   const range = mediaVisible ? clipRangeUi(root) : { valid: false };
+  const outputFormat = $('#clip-output-format', root).value;
+  const gifMode = outputFormat === 'gif';
+  if (gifMode && mediaVisible && clipState.end - clipState.start > 15) { clipState.end = Math.min(clipState.start + 15, clipState.media.duration); clipState.syncRangeFields = true; }
+  $('#clip-export span', root).textContent = gifMode ? 'Make GIF' : 'Make clip';
+  $('#clip-output-note', root).textContent = gifMode ? 'GIFs are limited to 15 seconds.' : 'Only clip media you have permission to use.';
+  $('#clip-output-format', root).disabled = busyNow;
   exportButton.disabled = busyNow || !range.valid;
   for (const selector of ['#clip-start', '#clip-end', '#clip-start-range', '#clip-end-range']) $(selector, root).disabled = busyNow || !mediaVisible;
   $('#clip-progress-wrap', root).hidden = !busyNow;
@@ -491,7 +498,8 @@ function clipProgressUi(root) {
   $('#clip-complete', root).hidden = clipState.status !== 'completed';
   if (busyNow) {
     const label = Math.max(0, Math.min(100, Math.round(clipState.progress || 0)));
-    $('#clip-status-text', root).textContent = clipState.status === 'queued' ? 'Preparing your clip…' : clipState.status === 'downloading' ? 'Fetching and cutting the selected section…' : 'Making your MP4 clip…';
+    const gifMode = $('#clip-output-format', root).value === 'gif';
+    $('#clip-status-text', root).textContent = clipState.status === 'queued' ? (gifMode ? 'Preparing your GIF…' : 'Preparing your clip…') : clipState.status === 'downloading' ? 'Fetching and cutting the selected section…' : (gifMode ? 'Rendering your GIF…' : 'Making your MP4 clip…');
     $('#clip-progress-label', root).textContent = `${label}%`;
     $('#clip-progress-bar', root).style.width = `${label}%`;
     $('.job-progress', root).setAttribute('aria-valuenow', String(label));
@@ -517,6 +525,7 @@ function mountClipper(root) {
     clipProgressUi(root);
   });
   $('#clip-file', root).addEventListener('change', () => clipProgressUi(root));
+  $('#clip-output-format', root).addEventListener('change', event => { selectedMediaTool = event.target.value === 'gif' ? 'gif' : 'clip'; if (event.target.value === 'gif' && clipState.media) { clipState.end = Math.min(clipState.start + 15, clipState.media.duration); clipState.syncRangeFields = true; } updateMediaToolsUi(root); });
   $$('[data-clip-source]', root).forEach(button => button.addEventListener('click', () => {
     clipState.source = button.dataset.clipSource;
     if (clipState.status === 'failed' || clipState.status === 'cancelled') { clipState.status = 'idle'; clipState.error = null; }
@@ -611,7 +620,7 @@ async function exportClip(root) {
   const generation = ++clipGeneration;
   clipProgressUi(root);
   try {
-    const body = { start, end };
+    const body = { start, end, outputFormat: $('#clip-output-format', root).value };
     if (clipState.media.localMediaId) body.localMediaId = clipState.media.localMediaId;
     else body.analysisId = clipState.media.analysisId;
     const response = await api('/tools/clip', { method: 'POST', body: JSON.stringify(body) });
@@ -665,16 +674,23 @@ function updateMediaToolsUi(root) {
   const tabs = $$('[data-tool]', root);
   const clipPanel = $('#clipper-panel', root);
   const toolPanel = $('#url-tool-panel', root);
-  const isClip = selectedMediaTool === 'clip';
+  const isClip = selectedMediaTool === 'clip' || selectedMediaTool === 'gif';
   clipPanel.hidden = !isClip;
   toolPanel.hidden = isClip;
+  if (isClip) {
+    const gifMode = selectedMediaTool === 'gif';
+    $('#clip-output-format', root).value = gifMode ? 'gif' : 'mp4';
+    $('#clipper-heading', root).textContent = gifMode ? 'GIF maker' : 'Video clipper';
+    $('#clipper-copy', root).textContent = gifMode ? 'Select a short section and save it as a looping GIF.' : 'Paste a video link, choose a section and save the clip.';
+    if (gifMode && clipState.media && clipState.end - clipState.start > 15) { clipState.end = Math.min(clipState.start + 15, clipState.media.duration); clipState.syncRangeFields = true; }
+  }
   for (const tab of tabs) {
     const selected = tab.dataset.tool === selectedMediaTool;
     tab.classList.toggle('active', selected);
     tab.setAttribute('aria-pressed', String(selected));
     tab.disabled = (toolBusyStatuses.includes(urlToolState.status) || toolBusyStatuses.includes(clipState.status)) && !selected;
   }
-  if (isClip) return;
+  if (isClip) { clipProgressUi(root); return; }
   const details = urlToolDetails[selectedMediaTool] || urlToolDetails.compress;
   $('#url-tool-heading', root).textContent = details.title;
   $('#url-tool-copy', root).textContent = details.copy;
@@ -878,6 +894,12 @@ function showPage(page) {
     theme.value = document.documentElement.dataset.theme; theme.addEventListener('change', () => setTheme(theme.value)); themeRow.append(themeInfo, theme); content.append(themeRow);
     const engineRow = document.createElement('div'); engineRow.className = 'setting-row'; const engineInfo = document.createElement('div'); const engineTitle = document.createElement('strong'); engineTitle.textContent = 'Local engine'; const engineDescription = document.createElement('span'); engineDescription.textContent = engineState?.ready ? (engineState.ffmpeg.available ? 'Connected · yt-dlp and FFmpeg ready' : 'Connected · FFmpeg not found') : 'Not connected'; engineInfo.append(engineTitle, engineDescription); engineRow.append(engineInfo); addButton(engineRow, engineState?.desktop ? 'Engine status' : 'Engine setup', openConnect); content.append(engineRow);
     const historyRow = document.createElement('div'); historyRow.className = 'setting-row'; const historyInfo = document.createElement('div'); const historyTitle = document.createElement('strong'); historyTitle.textContent = 'Local history'; const historyDescription = document.createElement('span'); historyDescription.textContent = `${readHistory().length} saved links on this device.`; historyInfo.append(historyTitle, historyDescription); historyRow.append(historyInfo); addButton(historyRow, 'Clear history', clearHistory); content.append(historyRow);
+    const updatesRow = document.createElement('div'); updatesRow.className = 'setting-row'; const updatesInfo = document.createElement('div'); const updatesTitle = document.createElement('strong'); updatesTitle.textContent = 'App updates'; const updatesDescription = document.createElement('span'); updatesDescription.textContent = engineState?.version ? `Current version ${engineState.version} · Updates install from GitHub Releases.` : 'Check GitHub Releases for the latest installer.'; updatesInfo.append(updatesTitle, updatesDescription); updatesRow.append(updatesInfo);
+    const updateStatus = document.createElement('span'); updateStatus.className = 'setting-status'; updateStatus.setAttribute('aria-live', 'polite'); updatesInfo.append(updateStatus);
+    const checkButton = addButton(updatesRow, 'Check for updates', async () => { checkButton.disabled = true; updateStatus.textContent = 'Checking…'; const result = await checkForAppUpdate(engineState, true); checkButton.disabled = false; updateStatus.textContent = !result ? 'Could not check right now. Try again later.' : result.updateAvailable ? `Version ${result.latestVersion} is ready to install.` : result.latestVersion ? `You’re up to date · v${result.currentVersion}.` : 'Could not check right now. Try again later.'; }, 'setting-action'); content.append(updatesRow);
+    const autoRow = document.createElement('div'); autoRow.className = 'setting-row'; const autoInfo = document.createElement('div'); const autoTitle = document.createElement('strong'); autoTitle.textContent = 'Check on startup'; const autoDescription = document.createElement('span'); autoDescription.textContent = 'Show an update notice when a new desktop release is available.'; autoInfo.append(autoTitle, autoDescription); autoRow.append(autoInfo); const autoCheck = document.createElement('input'); autoCheck.type = 'checkbox'; autoCheck.className = 'setting-checkbox'; autoCheck.checked = localStorage.getItem('xovra-auto-update') !== 'false'; autoCheck.setAttribute('aria-label', 'Check for updates on startup'); autoCheck.addEventListener('change', () => { try { localStorage.setItem('xovra-auto-update', String(autoCheck.checked)); } catch {} }); autoRow.append(autoCheck); content.append(autoRow);
+    const notes = document.createElement('section'); notes.className = 'release-notes'; const notesTitle = document.createElement('h2'); notesTitle.textContent = 'What’s new'; notes.append(notesTitle);
+    for (const [title, description] of [['A calmer workspace', 'Cleaner navigation and a more focused layout on desktop and phone.'], ['Short GIF clips', 'Turn a selected section of a video into a small looping GIF.'], ['Release checks', 'Check for desktop updates from Settings and read release notes here.']]) { const note = document.createElement('p'); const label = document.createElement('strong'); label.textContent = title; note.append(label, document.createTextNode(description)); notes.append(note); } content.append(notes);
   }
 }
 
@@ -946,22 +968,24 @@ function setEngineUi(status, online = true) {
     ? 'The Xovra media engine is installed and ready on this device.'
     : 'yt-dlp and FFmpeg are available. Paste a public media link and Xovra will show the formats returned by its source.';
 }
-async function checkForAppUpdate(status) {
-  if (!status?.desktop) return;
+async function checkForAppUpdate(status, manual = false) {
+  if (!status?.desktop && !manual) return null;
   try {
-    const update = await api('/update', { signal: AbortSignal.timeout(7000) });
-    if (!update.updateAvailable || !update.releaseUrl) return;
-    $('#update-banner-copy').textContent = `Version ${update.latestVersion} is ready. You have ${update.currentVersion}; install the new package to update.`;
-    $('#update-banner-link').href = update.releaseUrl;
-    $('#update-banner').hidden = false;
-  } catch { /* update checks are optional and should not interrupt app use */ }
+    const update = await api(manual ? '/update?refresh=1' : '/update', { signal: AbortSignal.timeout(9000) });
+    if (update.updateAvailable && update.releaseUrl) {
+      $('#update-banner-copy').textContent = `Version ${update.latestVersion} is ready. You have ${update.currentVersion}; install the new package to update.`;
+      $('#update-banner-link').href = update.releaseUrl;
+      $('#update-banner').hidden = false;
+    } else if (manual) $('#update-banner').hidden = true;
+    return update;
+  } catch { return null; }
 }
 $('#dismiss-update').addEventListener('click', () => { $('#update-banner').hidden = true; });
 async function refreshEngineStatus() {
   try {
     const status = await api('/status', { signal: AbortSignal.timeout(7000) });
     setEngineUi(status, true);
-    void checkForAppUpdate(status);
+    if (localStorage.getItem('xovra-auto-update') !== 'false') void checkForAppUpdate(status);
   } catch { setEngineUi(null, false); }
 }
 function openConnect() { $('#connect-dialog').showModal(); }

@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { lookup } from 'node:dns/promises';
 import { randomUUID } from 'node:crypto';
-import { createWriteStream, existsSync } from 'node:fs';
+import { createWriteStream, existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
@@ -19,7 +19,7 @@ const MAX_BODY = 64 * 1024;
 const MAX_ANALYSES = 3;
 const MAX_QUEUE = 40;
 const DOWNLOAD_CONCURRENCY = 2;
-const APP_VERSION = process.env.XOVRA_APP_VERSION || process.env.npm_package_version || '0.1.2';
+const APP_VERSION = process.env.XOVRA_APP_VERSION || process.env.npm_package_version || JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
 const LATEST_RELEASE_API = 'https://api.github.com/repos/Diaxo1/Xovra-video-downloader-/releases/latest';
 const RELEASE_PAGE = 'https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest';
 let updateCache = { expiresAt: 0, value: null };
@@ -215,7 +215,7 @@ async function findBinary(name, args) {
 
 async function engineStatus() {
   const [ytDlp, ffmpeg] = await Promise.all([findBinary('yt-dlp', ['--version']), findBinary('ffmpeg', ['-version'])]);
-  return { ready: Boolean(ytDlp), desktop: process.env.XOVRA_DESKTOP === '1', ytdlp: ytDlp ? { available: true, version: ytDlp.version } : { available: false }, ffmpeg: ffmpeg ? { available: true, version: ffmpeg.version } : { available: false }, downloadDirectory: DOWNLOAD_DIR };
+  return { version: APP_VERSION, ready: Boolean(ytDlp), desktop: process.env.XOVRA_DESKTOP === '1', ytdlp: ytDlp ? { available: true, version: ytDlp.version } : { available: false }, ffmpeg: ffmpeg ? { available: true, version: ffmpeg.version } : { available: false }, downloadDirectory: DOWNLOAD_DIR };
 }
 
 function fileSize(value) {
@@ -492,7 +492,7 @@ async function runDownload({ job, formatExpression }) {
 }
 
 function publicClipJob(job) {
-  return { id: job.id, status: job.status, progress: job.progress, fileName: job.fileName, outputName: job.outputPath ? path.basename(job.outputPath) : job.outputName, start: job.start, end: job.end, error: job.error, createdAt: job.createdAt, updatedAt: job.updatedAt };
+  return { id: job.id, outputFormat: job.outputFormat || 'mp4', status: job.status, progress: job.progress, fileName: job.fileName, outputName: job.outputPath ? path.basename(job.outputPath) : job.outputName, start: job.start, end: job.end, error: job.error, createdAt: job.createdAt, updatedAt: job.updatedAt };
 }
 
 function updateClipJob(job, changes) {
@@ -540,14 +540,20 @@ function clipTimestamp(seconds) {
 }
 
 async function runClip(job, binaryPath, ffmpegPath) {
-  const section = `*${clipTimestamp(job.start)}-${clipTimestamp(job.end)}`;
-  const template = path.join(CLIP_DIR, `%(title).120B [%(id)s] clip-${job.id.slice(0, 8)}.%(ext)s`);
+  const section = '*' + clipTimestamp(job.start) + '-' + clipTimestamp(job.end);
+  const template = path.join(CLIP_DIR, '%(title).120B [%(id)s] clip-' + job.id.slice(0, 8) + '.%(ext)s');
+  const gifFilter = 'fps=12,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer';
+  const asGif = job.outputFormat === 'gif';
   let command = binaryPath;
   let args;
+  let gifSourcePath = null;
   if (job.localMediaId) {
-    job.outputPath = path.join(CLIP_DIR, `${safeToolFileBase(job.fileName)} clip-${job.id.slice(0, 8)}.mp4`);
+    job.outputPath = path.join(CLIP_DIR, safeToolFileBase(job.fileName) + ' clip-' + job.id.slice(0, 8) + (asGif ? '.gif' : '.mp4'));
     command = ffmpegPath;
-    args = ['-hide_banner', '-loglevel', 'error', '-nostats', '-progress', 'pipe:1', '-y', '-i', job.inputPath, '-ss', String(job.start), '-t', String(job.end - job.start), '-map', '0:v:0', '-map', '0:a:0?', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', job.outputPath];
+    args = ['-hide_banner', '-loglevel', 'error', '-nostats', '-progress', 'pipe:1', '-y', '-ss', String(job.start), '-i', job.inputPath, '-t', String(job.end - job.start)];
+    if (asGif) args.push('-filter_complex', gifFilter, '-an', '-loop', '0');
+    else args.push('-map', '0:v:0', '-map', '0:a:0?', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart');
+    args.push(job.outputPath);
     updateClipJob(job, { status: 'processing', progress: 0 });
   } else {
     args = ['--ignore-config', '--no-playlist', '--no-warnings', '--no-colors', '--newline', '--progress', '--progress-template', 'download:%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s', '--download-sections', section, '--force-keyframes-at-cuts', '--recode-video', 'mp4', '--print', 'after_move:XOVRA_FILE:%(filepath)s', '--format', 'bestvideo*+bestaudio/best', '--output', template, '--windows-filenames', '--trim-filenames', '140', '--socket-timeout', '20'];
@@ -562,17 +568,30 @@ async function runClip(job, binaryPath, ffmpegPath) {
       const line = result.stdout.split(/\r?\n/).find(item => item.startsWith('XOVRA_FILE:'));
       if (line) job.outputPath = line.slice('XOVRA_FILE:'.length).trim();
     }
-    const resolved = job.outputPath && path.resolve(job.outputPath);
-    if (!resolved || !resolved.startsWith(`${CLIP_DIR}${path.sep}`) || !existsSync(resolved)) throw fail(500, 'The media engine finished without creating the clip.', 'clip_output_missing');
+    let resolved = job.outputPath && path.resolve(job.outputPath);
+    if (!resolved || !resolved.startsWith(CLIP_DIR + path.sep) || !existsSync(resolved)) throw fail(500, 'The media engine finished without creating the clip.', 'clip_output_missing');
+    if (asGif && !job.localMediaId) {
+      gifSourcePath = resolved;
+      const gifPath = path.join(CLIP_DIR, safeToolFileBase(job.fileName) + ' clip-' + job.id.slice(0, 8) + '.gif');
+      updateClipJob(job, { status: 'processing', progress: 85 });
+      await run(ffmpegPath, ['-hide_banner', '-loglevel', 'error', '-nostats', '-progress', 'pipe:1', '-y', '-i', gifSourcePath, '-filter_complex', gifFilter, '-an', '-loop', '0', gifPath], { timeout: DOWNLOAD_TIMEOUT, maxOutput: 2 * 1024 * 1024, onLine: line => clipProgress(line, job), onStart: child => activeProcesses.set(job.id, child), failureFormatter: friendlyClipError });
+      if (job.status === 'cancelled') return;
+      job.outputPath = gifPath;
+      await rm(gifSourcePath, { force: true });
+      gifSourcePath = null;
+      resolved = path.resolve(job.outputPath);
+    }
+    if (!resolved || !resolved.startsWith(CLIP_DIR + path.sep) || !existsSync(resolved)) throw fail(500, 'The media engine finished without creating the clip.', 'clip_output_missing');
     updateClipJob(job, { status: 'completed', progress: 100, error: null });
   } catch (error) {
     if (job.status !== 'cancelled') updateClipJob(job, { status: 'failed', error: error.message || 'Could not create this clip.' });
   } finally {
     activeProcesses.delete(job.id);
+    if (gifSourcePath) await rm(gifSourcePath, { force: true }).catch(() => {});
+    if (asGif && job.status !== 'completed' && job.outputPath) await rm(job.outputPath, { force: true }).catch(() => {});
     if (activeClipId === job.id) activeClipId = null;
   }
 }
-
 async function createClip(body) {
   if (activeClipId) throw fail(429, 'Finish or cancel the current clip before starting another.', 'clip_busy');
   const localMediaId = typeof body.localMediaId === 'string' ? body.localMediaId : null;
@@ -583,8 +602,10 @@ async function createClip(body) {
   if (localMedia ? !localMedia.hasVideo : ![...analysis.formatIds.values()].some(format => format.hasVideo)) throw fail(422, 'This media does not contain a video track. Choose a video link or file.', 'video_track_missing');
   const start = Number(body.start);
   const end = Number(body.end);
+  const outputFormat = body.outputFormat === 'gif' ? 'gif' : 'mp4';
   const duration = localMedia?.duration ?? analysis?.duration;
-  if (!Number.isFinite(duration) || !Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end <= start || end > duration || end - start > MAX_CLIP_SECONDS) throw fail(400, 'Choose a valid range within this video. Clips can be up to 30 minutes long.', 'invalid_clip_range');
+  const maxSeconds = outputFormat === 'gif' ? 15 : MAX_CLIP_SECONDS;
+  if (!Number.isFinite(duration) || !Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end <= start || end > duration || end - start > maxSeconds) throw fail(400, outputFormat === 'gif' ? 'GIF clips can be up to 15 seconds long.' : 'Choose a valid range within this video. Clips can be up to 30 minutes long.', 'invalid_clip_range');
   const binary = localMedia ? null : await findBinary('yt-dlp', ['--version']);
   if (!localMedia && !binary) throw fail(503, 'yt-dlp is missing. Run npm run setup:engine and restart Xovra.', 'ytdlp_missing');
   const ffmpeg = await findBinary('ffmpeg', ['-version']);
@@ -592,7 +613,7 @@ async function createClip(body) {
   await mkdir(CLIP_DIR, { recursive: true });
   if (activeClipId) throw fail(429, 'Finish or cancel the current clip before starting another.', 'clip_busy');
   const id = randomUUID();
-  const job = { id, status: 'queued', progress: 0, fileName: localMedia?.title || analysis.title, outputName: null, outputPath: null, url: analysis?.sourceUrl || null, localMediaId, inputPath: localMedia?.filePath || null, start, end, error: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const job = { id, outputFormat, status: 'queued', progress: 0, fileName: localMedia?.title || analysis.title, outputName: null, outputPath: null, url: analysis?.sourceUrl || null, localMediaId, inputPath: localMedia?.filePath || null, start, end, error: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   activeClipId = id;
   clipJobs.set(id, job);
   void runClip(job, binary?.path || null, ffmpeg.path);
@@ -768,9 +789,9 @@ function isNewerVersion(latest, current) {
   return false;
 }
 
-async function getAppUpdateInfo() {
+async function getAppUpdateInfo(forceRefresh = false) {
   const currentVersion = APP_VERSION.replace(/^v/i, '');
-  if (updateCache.expiresAt > Date.now() && updateCache.value) return updateCache.value;
+  if (!forceRefresh && updateCache.expiresAt > Date.now() && updateCache.value) return updateCache.value;
   try {
     const response = await fetch(LATEST_RELEASE_API, {
       headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'Xovra-desktop' },
@@ -804,7 +825,7 @@ async function readJson(req) {
 async function handleApi(req, res, pathname) {
   if (!localRequest(req)) return json(res, 403, { error: 'This local engine only accepts requests from Xovra.', code: 'origin_rejected' });
   if (req.method === 'GET' && pathname === '/api/status') return json(res, 200, await engineStatus());
-  if (req.method === 'GET' && pathname === '/api/update') return json(res, 200, await getAppUpdateInfo());
+  if (req.method === 'GET' && pathname === '/api/update') return json(res, 200, await getAppUpdateInfo(new URL(req.url, 'http://127.0.0.1').searchParams.get('refresh') === '1'));
   if (req.method === 'GET' && pathname === '/api/jobs') return json(res, 200, { jobs: [...jobs.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 100) });
   if (req.method === 'POST' && pathname === '/api/media/upload') return json(res, 201, await receiveMediaUpload(req));
   if (req.method === 'POST' && pathname === '/api/analyze') {

@@ -46,7 +46,12 @@ jobs:
       - name: Verify stable version tag
         shell: bash
         run: |
-          [[ "$GITHUB_REF_NAME" == "android-v0.1.1" ]] || { echo "This workflow is configured for android-v0.1.1." >&2; exit 1; }
+          APP_VERSION=$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' android-app/app/build.gradle.kts | head -n1)
+          EXPECTED_TAG="android-v${APP_VERSION}"
+          [[ -n "$APP_VERSION" && "$GITHUB_REF_NAME" == "$EXPECTED_TAG" ]] || {
+            echo "Tag $GITHUB_REF_NAME must match the Android app version ($EXPECTED_TAG)." >&2
+            exit 1
+          }
       - name: Build signed release APK
         run: gradle -p android-app :app:assembleRelease
       - name: Upload signed APK for release
@@ -71,7 +76,8 @@ jobs:
           path: release-assets
       - name: Prepare release assets
         run: |
-          mv release-assets/app-release.apk release-assets/Xovra-Android-0.1.1.apk
+          VERSION="${GITHUB_REF_NAME#android-v}"
+          mv release-assets/app-release.apk "release-assets/Xovra-Android-${VERSION}.apk"
           cp android-app/THIRD-PARTY-NOTICES.md release-assets/Xovra-Android-THIRD-PARTY-NOTICES.md
           cd release-assets
           sha256sum * > SHA256SUMS.txt
@@ -80,5 +86,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" release-assets/* \
-            --title "Xovra Android 0.1.1" \
-            --notes "First stable Xovra Android release. Signed APK for Android 10 and newer. Install over the Android preview only after uninstalling it first; preview and stable APKs use different signing certificates. Future stable updates can be installed over this version. Verify the APK with SHA256SUMS.txt."
+            --title "Xovra Android ${GITHUB_REF_NAME#android-v}" \
+            --notes "Stable signed Xovra Android APK for Android 10 and newer. Install this over an existing stable version to update it; Android may ask you to allow installs from your browser. Keep the same signing key for future updates. Verify the APK with SHA256SUMS.txt."

@@ -19,6 +19,7 @@
         <button class="nav-item" type="button" data-page="downloads"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 16v4h14v-4"/></svg><span>Downloads</span><span class="nav-count" id="download-count" hidden>0</span></button>
         <button class="nav-item" type="button" data-page="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 6.3 3 3M4 20l8.6-8.6M14 4.5a4.3 4.3 0 0 0 5.5 5.5L12 17.5 6.5 12z"/><circle cx="5" cy="19" r="2"/></svg><span>Media tools</span></button>
         <button class="nav-item" type="button" data-page="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.2-5.7L3.5 8.5"/><path d="M3.5 4.5v4h4M12 7v5l3.5 2"/></svg><span>History</span></button>
+        <button class="nav-item mobile-bottom-settings" type="button" data-page="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19 13 2 1-2 4-2-1-2 1v2h-5v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V4h5v2l2 1 2-1 2 4-2 1z"/></svg><span>Settings</span></button>
       </nav>
       <div class="sidebar-bottom">
         <div class="sidebar-engine"><span class="status-dot" aria-hidden="true"></span><span id="engine-sidebar-status">Local engine disconnected</span></div>
@@ -33,7 +34,6 @@
         <a class="brand mobile-brand" href="#analyzer" aria-label="Xovra home"><span class="brand-mark" aria-hidden="true"><img src="assets/xovra-icon.png" alt=""></span><span class="brand-name">xovra<span class="brand-period">.</span></span></a>
         <div class="topbar-utilities">
           <button class="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.5 8.5 0 1 0 20.5 15.5Z"/></svg></button>
-          <button class="nav-item mobile-settings-shortcut" type="button" data-page="settings" aria-label="Settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19 13 2 1-2 4-2-1-2 1v2h-5v-2l-2-1-2 1-2-4 2-1v-2l-2-1 2-4 2 1 2-1V4h5v2l2 1 2-1 2 4-2 1z"/></svg></button>
         </div>
       </header>
       <div class="update-banner" id="update-banner" role="status" hidden>
@@ -98,11 +98,12 @@
       <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="compress"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7V4h3m10 0h3v3M4 17v3h3m10 0h3v-3M8 12h8m-4-4v8"/></svg></span><span><strong>Compress</strong><small>Shrink file size</small></span></button>
       <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="convert"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h14l-3-3m5 13H6l3 3M18 7l2-3M6 17l-2 3"/></svg></span><span><strong>Convert</strong><small>Change video format</small></span></button>
       <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="audio"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4m4-8v12m4-15v18m4-14v10m4-7v4"/></svg></span><span><strong>Extract audio</strong><small>Save the soundtrack</small></span></button>
+      <button class="media-tool-tab" type="button" aria-pressed="false" data-tool="gif"><span class="media-tool-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 10a2.5 2.5 0 1 0 0 4h2v-2h-2m4-2v5m3-5v5m0-5h3"/></svg></span><span><strong>Make GIF</strong><small>Loop a short clip</small></span></button>
     </div>
     <section class="clipper-tool" id="clipper-panel" aria-labelledby="clipper-heading">
       <div class="clipper-heading">
         <span class="tool-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="m10 9 5 3-5 3zM7 3v2m10-2v2M7 19v2m10-2v2"/></svg></span>
-        <div><h2 id="clipper-heading">Video clipper</h2><p>Paste a video link, choose a section and save the clip.</p></div>
+        <div><h2 id="clipper-heading">Video clipper</h2><p id="clipper-copy">Paste a video link, choose a section and save the clip.</p></div>
       </div>
       <div class="media-source-switch" role="group" aria-label="Clip source"><button type="button" class="media-source-button active" aria-pressed="true" data-clip-source="link">Video link</button><button type="button" class="media-source-button" aria-pressed="false" data-clip-source="file">From your device</button></div>
       <form id="clip-link-form" class="clip-link-form">
@@ -126,7 +127,7 @@
         </div>
         <div class="clip-range-sliders"><label class="clip-slider-field"><span>In point</span><input id="clip-start-range" type="range" min="0" max="30" step="1" value="0" aria-label="Set clip start"><span id="clip-start-range-label">00:00:00</span></label><label class="clip-slider-field"><span>Out point</span><input id="clip-end-range" type="range" min="1" max="30" step="1" value="30" aria-label="Set clip end"><span id="clip-end-range-label">00:00:30</span></label></div>
         <p class="clip-range-summary" id="clip-range-summary">Clips can be up to 30 minutes long.</p>
-        <div class="clip-export-row"><span>MP4 output · Only clip media you have permission to use.</span><button id="clip-export" class="analyze-button" type="button"><span>Make clip</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
+        <div class="clip-export-row"><label class="clip-output-choice"><span>Save as</span><select id="clip-output-format"><option value="mp4">MP4 video</option><option value="gif">Looping GIF · max 15 sec</option></select></label><span id="clip-output-note">Only clip media you have permission to use.</span><button id="clip-export" class="analyze-button" type="button"><span>Make clip</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
         <div id="clip-progress-wrap" class="clip-progress-wrap" hidden><div class="clip-progress-meta"><span id="clip-status-text">Preparing clip…</span><span id="clip-progress-label">0%</span></div><div class="job-progress" role="progressbar" aria-label="Clip export progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="clip-progress-bar"></span></div></div>
         <div id="clip-complete" class="clip-complete" hidden><span>Clip saved to your computer.</span><button id="clip-reveal" class="job-button" type="button">Show in folder</button></div>
         <button id="clip-cancel" class="job-button clip-cancel" type="button" hidden>Cancel export</button>

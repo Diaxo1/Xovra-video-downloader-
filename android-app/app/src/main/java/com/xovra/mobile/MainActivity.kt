@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.RectF
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -29,7 +30,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -74,7 +79,10 @@ import com.chaquo.python.Python
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.io.File
 import java.util.Locale
 
@@ -109,6 +117,7 @@ private data class MediaFormat(
 )
 
 private data class MediaItem(val title: String, val source: String, val formats: List<MediaFormat>)
+private data class ReleaseCheck(val updateAvailable: Boolean, val currentVersion: String, val latestVersion: String, val releaseUrl: String)
 
 class MainActivity : ComponentActivity() {
     private val history = mutableStateListOf<String>()
@@ -145,7 +154,9 @@ class MainActivity : ComponentActivity() {
                         preferences.edit().putBoolean("dark", darkMode).apply()
                     },
                     onAnalyze = { url, done -> analyze(url, done) },
-                    onDownload = { url, format, done -> download(url, format, done) }
+                    onDownload = { url, format, done -> download(url, format, done) },
+                    onCheckForUpdates = { done -> checkForAppUpdate(done) },
+                    onOpenRelease = { url -> openReleasePage(url) }
                 )
             }
         }
@@ -173,6 +184,38 @@ class MainActivity : ComponentActivity() {
             }
             done(result)
         }
+    }
+
+    private fun checkForAppUpdate(done: (Result<ReleaseCheck>) -> Unit) {
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                runCatching {
+                    val connection = URL("https://api.github.com/repos/Diaxo1/Xovra-video-downloader-/releases?per_page=100").openConnection() as HttpURLConnection
+                    connection.connectTimeout = 8000; connection.readTimeout = 8000
+                    connection.setRequestProperty("Accept", "application/vnd.github+json")
+                    connection.setRequestProperty("User-Agent", "Xovra-Android")
+                    check(connection.responseCode == 200) { "GitHub could not be reached. Try again later." }
+                    val releases = JSONArray(connection.inputStream.bufferedReader().use { it.readText() })
+                    connection.disconnect()
+                    val release = (0 until releases.length()).map { releases.getJSONObject(it) }
+                        .firstOrNull { it.optString("tag_name").startsWith("android-v") && !it.optBoolean("draft") && !it.optBoolean("prerelease") }
+                        ?: error("No stable Android release was found.")
+                    val latest = release.getString("tag_name").removePrefix("android-v")
+                    val current = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.0"
+                    val latestParts = latest.split(".").map { it.toIntOrNull() ?: 0 }
+                    val currentParts = current.split(".").map { it.toIntOrNull() ?: 0 }
+                    val newer = (0..2).firstNotNullOfOrNull { index ->
+                        if ((latestParts.getOrElse(index) { 0 }) != (currentParts.getOrElse(index) { 0 })) latestParts.getOrElse(index) { 0 } > currentParts.getOrElse(index) { 0 } else null
+                    } ?: false
+                    ReleaseCheck(newer, current, latest, release.optString("html_url", "https://github.com/Diaxo1/Xovra-video-downloader-/releases"))
+                }
+            }
+            done(result)
+        }
+    }
+
+    private fun openReleasePage(url: String) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
     }
 
     private fun download(url: String, format: MediaFormat, done: (Result<String>) -> Unit) {
@@ -228,7 +271,9 @@ private fun XovraScreen(
     darkMode: Boolean,
     onToggleTheme: () -> Unit,
     onAnalyze: (String, (Result<MediaItem>) -> Unit) -> Unit,
-    onDownload: (String, MediaFormat, (Result<String>) -> Unit) -> Unit
+    onDownload: (String, MediaFormat, (Result<String>) -> Unit) -> Unit,
+    onCheckForUpdates: ((Result<ReleaseCheck>) -> Unit) -> Unit,
+    onOpenRelease: (String) -> Unit
 ) {
     var url by remember { mutableStateOf(initialLink) }
     var loading by remember { mutableStateOf(false) }
@@ -240,6 +285,9 @@ private fun XovraScreen(
     var selectedSource by remember { mutableStateOf("auto") }
     var manualSource by remember { mutableStateOf(false) }
     var activePage by remember { mutableStateOf("Analyzer") }
+    var checkingUpdates by remember { mutableStateOf(false) }
+    var updateMessage by remember { mutableStateOf<String?>(null) }
+    var updateReleaseUrl by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -249,19 +297,19 @@ private fun XovraScreen(
                 Modifier.fillMaxWidth().background(palette.surface).padding(horizontal = 12.dp, vertical = 8.dp).navigationBarsPadding(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                listOf("Analyzer", "Downloads", "Media tools", "History").forEach { page ->
+                listOf("Analyzer", "Downloads", "Media tools", "History", "Settings").forEach { page ->
                     val chosen = activePage == page
-                    val icon = when (page) { "Analyzer" -> "scan-line-nav"; "Downloads" -> "download"; "Media tools" -> "shapes"; else -> "history" }
+                    val icon = when (page) { "Analyzer" -> "scan-line-nav"; "Downloads" -> "download"; "Media tools" -> "shapes"; "History" -> "history"; else -> "settings-2" }
                     Column(
                         Modifier.weight(1f).height(58.dp)
-                            .then(if (chosen) Modifier.clay(palette.lime.copy(alpha = if (darkMode) .18f else .38f), RoundedCornerShape(14.dp), palette, 5.dp) else Modifier)
+                            .then(if (chosen) Modifier.clip(RoundedCornerShape(12.dp)).background(palette.lime.copy(alpha = if (darkMode) .18f else .32f)).border(1.dp, palette.lime.copy(alpha = .4f), RoundedCornerShape(12.dp)) else Modifier)
                             .clickable(role = Role.Tab) { activePage = page },
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
                         FigmaIcon(icon, Modifier.size(20.dp))
                         Spacer(Modifier.height(3.dp))
-                        Text(page, color = if (chosen) palette.ink else palette.muted, fontSize = 10.sp, fontWeight = if (chosen) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
+                        Text(if (page == "Media tools") "Tools" else page, color = if (chosen) palette.ink else palette.muted, fontSize = 11.sp, fontWeight = if (chosen) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1)
                     }
                 }
             }
@@ -311,7 +359,17 @@ private fun XovraScreen(
                 "Downloads" -> SimpleListPage("Downloads", "Files save to Downloads/Xovra on this phone.", downloads, palette, "Your saved files will appear here.")
                 "History" -> HistoryPage(history, palette, { history.clear() }) { link -> url = link; activePage = "Analyzer" }
                 "Media tools" -> ToolsPage(palette)
-                else -> SettingsPage(palette, darkMode, onToggleTheme)
+                else -> SettingsPage(palette, darkMode, onToggleTheme, checkingUpdates, updateMessage, updateReleaseUrl,
+                    onCheck = {
+                        checkingUpdates = true; updateMessage = null; updateReleaseUrl = null
+                        onCheckForUpdates { result ->
+                            checkingUpdates = false
+                            result.onSuccess { check ->
+                                updateMessage = if (check.updateAvailable) "Version " + check.latestVersion + " is ready to install." else "You are up to date · v" + check.currentVersion + "."
+                                if (check.updateAvailable) updateReleaseUrl = check.releaseUrl
+                            }.onFailure { updateMessage = it.message ?: "Could not check right now. Try again later." }
+                        }
+                    }, onOpenRelease = onOpenRelease)
             }
         }
     }
@@ -349,40 +407,37 @@ private fun AnalyzerPage(
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 27.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
         item {
             Column(Modifier.padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("THE MEDIA DESK", color = palette.muted, fontSize = 10.sp, letterSpacing = .4.sp)
+                Text("THE MEDIA DESK", color = palette.muted, fontSize = 12.sp, letterSpacing = .4.sp)
                 Column {
                     Text("Your media.", color = palette.ink, fontSize = 44.sp, lineHeight = 47.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.7).sp)
                     Text("Your call.", color = palette.muted, fontSize = 44.sp, lineHeight = 47.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.7).sp)
                 }
-                Text("Choose a source, then pick from what the link actually offers.", color = palette.muted, fontSize = 12.sp, lineHeight = 19.sp)
+                Text("Choose a source, then pick what that link offers.", color = palette.muted, fontSize = 14.sp, lineHeight = 20.sp)
             }
         }
         item {
-            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(28.dp), palette, 12.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(22.dp)) {
+            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(24.dp), palette, 6.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                         Text("Choose a source", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             FigmaIcon("sparkles", Modifier.size(13.dp))
-                            Text("Auto detects from your link", color = palette.muted, fontSize = 10.sp)
+                            Text("Auto detects from your link", color = palette.muted, fontSize = 13.sp)
                         }
                     }
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        sourceOptions.chunked(4).forEach { sourceRow ->
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                sourceRow.forEach { (key, label) ->
-                                    SourceChip(key, label, key == selectedSource, palette, Modifier.weight(1f)) { onSourceSelect(key) }
-                                }
-                            }
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(horizontal = 1.dp)) {
+                        items(sourceOptions) { (key, label) ->
+                            SourceChip(key, label, key == selectedSource, palette, Modifier) { onSourceSelect(key) }
                         }
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Now, bring the link.", color = palette.ink, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Paste a video or audio link", color = palette.ink, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     val context = LocalContext.current
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = url, onValueChange = onUrlChange,
-                        modifier = Modifier.fillMaxWidth().height(60.dp), singleLine = true,
+                        modifier = Modifier.weight(1f).height(60.dp), singleLine = true,
                         placeholder = { Text("https://", color = palette.muted2, fontSize = 14.sp) },
                         leadingIcon = { FigmaIcon("link", Modifier.size(20.dp)) },
                         trailingIcon = {
@@ -401,12 +456,18 @@ private fun AnalyzerPage(
                             unfocusedTrailingIconColor = palette.muted
                         )
                     )
-                    Text("Paste a link from a supported source to see its options.", color = palette.muted, fontSize = 11.sp, lineHeight = 17.sp)
-                    PrimaryAction("Analyze link", loading, palette, !loading && !downloading, onAnalyze)
-                    Row(Modifier.clickable(role = Role.Button) { }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        FigmaIcon("plus", Modifier.size(14.dp))
-                        Text("Add multiple links", color = palette.muted, fontSize = 12.sp)
+                    Button(
+                        onClick = onAnalyze, enabled = !loading && !downloading,
+                        modifier = Modifier.height(60.dp).widthIn(min = 126.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = palette.lime, contentColor = palette.limeInk),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                    ) {
+                        if (loading) CircularProgressIndicator(Modifier.size(18.dp), color = palette.limeInk, strokeWidth = 2.dp)
+                        else { Text("Analyze link", fontSize = 13.sp, fontWeight = FontWeight.SemiBold); Spacer(Modifier.width(7.dp)); FigmaIcon("arrow-right", Modifier.size(16.dp)) }
                     }
+                    }
+                    Text("Paste a supported link. Xovra reads its available formats.", color = palette.muted, fontSize = 13.sp, lineHeight = 18.sp)
                     message?.let { Text(it, color = Color(0xFFB84D3E), fontSize = 13.sp) }
                     savedMessage?.let { Text(it, color = palette.limeInk, fontSize = 13.sp) }
                 }
@@ -414,7 +475,7 @@ private fun AnalyzerPage(
                     Box(Modifier.fillMaxWidth().height(1.dp).background(palette.line))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FigmaIcon("shield-check", Modifier.size(16.dp))
-                        Text("Only download media you have permission to use.", color = palette.muted, fontSize = 10.sp, lineHeight = 15.sp)
+                        Text("Only download media you have permission to use.", color = palette.muted, fontSize = 12.sp, lineHeight = 17.sp)
                     }
                 }
             }
@@ -427,12 +488,13 @@ private fun AnalyzerPage(
 
 @Composable
 private fun SourceChip(key: String, label: String, selected: Boolean, palette: Palette, modifier: Modifier, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(18.dp)
-    Column(Modifier.then(modifier).height(68.dp).clay(if (selected) palette.lime else palette.surface, shape, palette, if (selected) 8.dp else 9.dp)
-        .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 3.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        when (key) { "x" -> Text("𝕏", color = palette.ink, fontSize = 20.sp, lineHeight = 21.sp); "more" -> FigmaIcon("ellipsis", Modifier.size(19.dp)); else -> FigmaIcon(sourceIcon(key), Modifier.size(19.dp)) }
-        Spacer(Modifier.height(6.dp))
-        Text(label, color = if (selected) palette.limeInk else palette.ink, fontSize = 10.sp, lineHeight = 12.sp, maxLines = 1, overflow = TextOverflow.Clip)
+    val shape = RoundedCornerShape(12.dp)
+    Row(Modifier.then(modifier).height(42.dp).clip(shape).background(if (selected) palette.lime else palette.surface)
+        .border(1.dp, if (selected) palette.lime.copy(alpha = .75f) else palette.line, shape)
+        .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 11.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        when (key) { "x" -> Text("X", color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold); "more" -> FigmaIcon("ellipsis", Modifier.size(17.dp)); else -> FigmaIcon(sourceIcon(key), Modifier.size(17.dp)) }
+        Text(label, color = if (selected) palette.limeInk else palette.ink, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Clip)
     }
 }
 
@@ -539,24 +601,47 @@ private fun HistoryPage(history: List<String>, palette: Palette, onClear: () -> 
 private fun ToolsPage(palette: Palette) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 28.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) { Text("Media tools", color = palette.ink, fontSize = 34.sp, fontWeight = FontWeight.Bold); Text("Clip, compress, convert or extract audio.", color = palette.muted, fontSize = 14.sp) }
-        listOf("Clip video" to "Cut a section", "Compress" to "Shrink file size", "Convert" to "Change video format", "Extract audio" to "Save the soundtrack").forEach { (title, copy) ->
+        listOf("Clip video" to "Cut a section", "Compress" to "Shrink file size", "Convert" to "Change video format", "Extract audio" to "Save the soundtrack", "Make GIF" to "Create a short looping clip").forEach { (title, copy) ->
             Row(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 7.dp).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) { Text(title, color = palette.ink, fontSize = 14.sp, fontWeight = FontWeight.SemiBold); Text(copy, color = palette.muted, fontSize = 12.sp) }
-                Text("Desktop for now", color = palette.muted, fontSize = 11.sp)
+                Text("Desktop app", color = palette.muted, fontSize = 12.sp)
             }
         }
     }
 }
 
 @Composable
-private fun SettingsPage(palette: Palette, darkMode: Boolean, onToggleTheme: () -> Unit) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp).padding(top = 28.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) { Text("Settings", color = palette.ink, fontSize = 34.sp, fontWeight = FontWeight.Bold); Text("Set up your local workspace.", color = palette.muted, fontSize = 14.sp) }
-        Row(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 7.dp).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) { Text("Dark theme", color = palette.ink, fontSize = 14.sp, fontWeight = FontWeight.SemiBold); Text("Keep the lime accent in both themes.", color = palette.muted, fontSize = 12.sp) }
+private fun SettingsPage(
+    palette: Palette, darkMode: Boolean, onToggleTheme: () -> Unit, checkingUpdates: Boolean,
+    updateMessage: String?, updateReleaseUrl: String?, onCheck: () -> Unit, onOpenRelease: (String) -> Unit
+) {
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(top = 26.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) { Text("Settings", color = palette.ink, fontSize = 34.sp, fontWeight = FontWeight.Bold); Text("Your appearance, updates and local data.", color = palette.muted, fontSize = 14.sp) }
+        Row(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 4.dp).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) { Text("Dark theme", color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold); Text("Keep the lime accent in both themes.", color = palette.muted, fontSize = 13.sp) }
             Switch(checked = darkMode, onCheckedChange = { onToggleTheme() })
         }
-        Text("Xovra is free and has no ads. Downloads stay on this device.", color = palette.muted, fontSize = 13.sp, lineHeight = 20.sp)
+        Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 4.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("App updates", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text("Xovra for Android · v" + BuildConfig.VERSION_NAME, color = palette.muted, fontSize = 13.sp)
+            Button(onClick = onCheck, enabled = !checkingUpdates, shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = palette.lime, contentColor = palette.limeInk)) {
+                if (checkingUpdates) CircularProgressIndicator(Modifier.size(17.dp), color = palette.limeInk, strokeWidth = 2.dp) else Text("Check for updates", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            }
+            updateMessage?.let { Text(it, color = palette.muted, fontSize = 14.sp, lineHeight = 20.sp) }
+            updateReleaseUrl?.let {
+                Row(Modifier.clickable(role = Role.Button) { onOpenRelease(it) }.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                    Text("Open Android release", color = palette.limeInk, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    FigmaIcon("arrow-up-right", Modifier.size(16.dp))
+                }
+            }
+        }
+        Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 4.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+            Text("Release notes · v0.1.2", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text("• Cleaner source picker and a more direct link workflow.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("• Settings now check the stable Android release on GitHub.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("• Downloads remain local and Xovra stays free with no ads.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+        }
+        Text("Downloads are saved to Downloads/Xovra on this device.", color = palette.muted, fontSize = 13.sp, lineHeight = 20.sp)
     }
 }
 
