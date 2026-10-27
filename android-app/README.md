@@ -8,7 +8,7 @@ The Android app embeds yt-dlp as a Python package through the MIT-licensed Chaqu
 
 Install Android Studio with Android SDK 36 and JDK 17, then open this `android-app` folder. Build the `app` debug APK from Android Studio. The app supports current 64-bit Android devices (arm64-v8a) and x86_64 emulators, Android 10 / API 29 and newer.
 
-The stable Android release is available at [Xovra Android 0.1.1](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.1). Download `Xovra-Android-0.1.1.apk` from its Assets section. If you installed the earlier debug preview, uninstall it before installing this first stable build. Android may ask you to allow installs from your browser.
+The latest stable Android release is [Xovra Android 0.1.2](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.2). Download `Xovra-Android-0.1.2.apk` from its Assets section. Install it over stable Android 0.1.1; uninstall the earlier debug preview first because it uses a different signing key. Android may ask you to allow installs from your browser.
 
 ## Current preview limits
 
@@ -30,5 +30,5 @@ The stable APK uses a persistent upload key so future updates can install over i
 
 On Windows PowerShell, create the key with `keytool -genkeypair -v -keystore xovra-upload-key.jks -storetype PKCS12 -alias xovra-upload -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=Xovra Android"`, then copy its Base64 value with `[Convert]::ToBase64String([IO.File]::ReadAllBytes("xovra-upload-key.jks")) | Set-Clipboard`. Use the exact password and alias chosen at key creation. Back up the `.jks` file and passwords securely in more than one place. Never commit them or paste them into chat.
 
-The stable workflow uses tags named `android-vMAJOR.MINOR.PATCH`; update the app version code and name before each new release. Remove the debug preview before installing the first stable APK; after that, keep using the same signing key for every update. Losing or replacing the key prevents in-place updates for users.
+The stable workflow uses tags named `android-vMAJOR.MINOR.PATCH`; update the app version code and name before each new release. Remove the debug preview before installing the first stable APK; after that, install newer stable APKs over the existing app and keep using the same signing key for every update. Losing or replacing the key prevents in-place updates for users.
 

@@ -3,7 +3,7 @@
   "productName": "Xovra",
   "description": "A local-first media workspace for links, clips, and conversions.",
   "author": "Xovra",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "type": "module",
   "main": "desktop.mjs",

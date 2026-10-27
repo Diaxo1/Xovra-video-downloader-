@@ -8,13 +8,13 @@ This source is published for inspection only; Xovra is not an open-source projec
 
 ## Download
 
-Download the latest desktop version (currently 0.1.4) from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
+Download the latest desktop version (currently 0.1.5) from [GitHub Releases](https://github.com/Diaxo1/Xovra-video-downloader-/releases/latest).
 
 - **Windows x64:** use the latest `Xovra-<version>-Setup.exe` branded installer or the matching `.msi` package.
 - **Linux x64:** use `.deb` for Debian or Ubuntu, or `.rpm` for Fedora and other RPM-based distributions.
-- **Android:** download `Xovra-Android-0.1.1.apk` from the [stable Android release](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.1). Uninstall the earlier debug preview before installing this first stable build. See [android-app](android-app/README.md) for feature limits.
+- **Android:** download `Xovra-Android-0.1.2.apk` from the [stable Android release](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.2). If you already have stable Android 0.1.1, install this update over it. Remove the earlier debug preview first. See [android-app](android-app/README.md) for feature limits.
 
-If Xovra 0.1.1 is installed, uninstall it before installing 0.1.2 or newer. Later versions can be installed over 0.1.2 and newer.
+Desktop installs from 0.1.2 and newer can be upgraded with the newer installer. If you have a 0.1.1 install, uninstall it first.
 
 Current Windows builds are unsigned and may show an Unknown Publisher or SmartScreen warning. Check that the installer came from this repository before running it.
 
