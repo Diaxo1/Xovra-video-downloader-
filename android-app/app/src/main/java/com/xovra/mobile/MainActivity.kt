@@ -93,14 +93,14 @@ private data class Palette(
 )
 
 private val LightPalette = Palette(
-    Color(0xFFF2F1E7), Color(0xFFF8F7EF), Color(0xFFEEEEE4), Color(0xFF2D3328),
-    Color(0xFF747C68), Color(0xFF89907D), Color(0xFFC5EC64), Color(0xFF3D5221),
-    Color(0xFFDFE2D0), Color(0xFFB6BE9C)
+    Color(0xFFF0EEE4), Color(0xFFFAF9F2), Color(0xFFF4F3EB), Color(0xFF272C24),
+    Color(0xFF62685B), Color(0xFF7B8172), Color(0xFFC8ED68), Color(0xFF28331B),
+    Color(0xFFDEDFCE), Color(0xFFAEB49A)
 )
 private val DarkPalette = Palette(
-    Color(0xFF151812), Color(0xFF20241D), Color(0xFF191D17), Color(0xFFF2F1E9),
-    Color(0xFFB3B8AA), Color(0xFF858C7D), Color(0xFFC6EF65), Color(0xFF273319),
-    Color(0xFF3C4336), Color(0xFF080A07)
+    Color(0xFF141711), Color(0xFF20241D), Color(0xFF191D17), Color(0xFFF2F2E9),
+    Color(0xFFC0C5B5), Color(0xFFA6AD98), Color(0xFFC8ED68), Color(0xFF28331B),
+    Color(0xFF3D4435), Color(0xFF080A07)
 )
 
 private val sourceOptions = listOf(
@@ -412,14 +412,23 @@ private fun AnalyzerPage(
                     Text("Your media.", color = palette.ink, fontSize = 44.sp, lineHeight = 47.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.7).sp)
                     Text("Your call.", color = palette.muted, fontSize = 44.sp, lineHeight = 47.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1.7).sp)
                 }
-                Text("Choose a source, then pick what that link offers.", color = palette.muted, fontSize = 14.sp, lineHeight = 20.sp)
+                Text("Bring a link. Choose the version that fits.", color = palette.muted, fontSize = 14.sp, lineHeight = 20.sp)
             }
         }
+        item { AnalyzerSteps(palette, hasLink = url.isNotBlank(), hasMedia = currentMedia != null) }
         item {
-            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(24.dp), palette, 6.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(28.dp), palette, 11.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(Modifier.size(38.dp).clip(RoundedCornerShape(13.dp)).background(palette.lime), contentAlignment = Alignment.Center) {
+                        Text("01", color = palette.limeInk, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("START WITH A LINK", color = palette.muted, fontSize = 11.sp, letterSpacing = .65.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Choose a source", color = palette.ink, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
                 Column(verticalArrangement = Arrangement.spacedBy(15.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                        Text("Choose a source", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             FigmaIcon("sparkles", Modifier.size(13.dp))
                             Text("Auto detects from your link", color = palette.muted, fontSize = 13.sp)
@@ -483,6 +492,29 @@ private fun AnalyzerPage(
         if (currentMedia != null) item { FormatsSection(currentMedia, selectedFormat, palette, downloading, onFormatSelect, onDownload) }
         item { RecentSection(history, media, palette, onClearHistory, onUseLink) }
         item { WorkspaceDetails(palette) }
+    }
+}
+
+@Composable
+private fun AnalyzerSteps(palette: Palette, hasLink: Boolean, hasMedia: Boolean) {
+    val activeStep = if (hasMedia) 2 else if (hasLink) 1 else 0
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(palette.surface)
+            .border(1.dp, palette.line, RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(7.dp)
+    ) {
+        listOf("Paste link", "Pick format", "Save file").forEachIndexed { index, label ->
+            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Box(
+                    Modifier.size(25.dp).clip(RoundedCornerShape(9.dp))
+                        .background(if (index <= activeStep) palette.lime else palette.inset),
+                    contentAlignment = Alignment.Center
+                ) { Text("0${index + 1}", color = if (index <= activeStep) palette.limeInk else palette.muted, fontSize = 10.sp, fontWeight = FontWeight.Bold) }
+                Text(label, color = if (index <= activeStep) palette.ink else palette.muted, fontSize = 11.sp, fontWeight = if (index == activeStep) FontWeight.SemiBold else FontWeight.Normal, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            if (index < 2) Text("·", color = palette.muted2, fontSize = 16.sp)
+        }
     }
 }
 
@@ -636,9 +668,9 @@ private fun SettingsPage(
             }
         }
         Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 4.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text("Release notes · v0.1.2", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text("• Cleaner source picker and a more direct link workflow.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
-            Text("• Settings now check the stable Android release on GitHub.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("Release notes · v0.1.3", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text("• A guided link → format → save flow, with a more sculpted analyzer surface.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("• Updated cream and lime colors with a clearer dark theme.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
             Text("• Downloads remain local and Xovra stays free with no ads.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
         }
         Text("Downloads are saved to Downloads/Xovra on this device.", color = palette.muted, fontSize = 13.sp, lineHeight = 20.sp)
