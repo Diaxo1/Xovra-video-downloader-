@@ -97,4 +97,4 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           gh release create "$GITHUB_REF_NAME" release-assets/* \
             --title "Xovra $version" \
-            --notes "Xovra 0.1.6 brings a redesigned, responsive media workspace, quick routes to Clip, Convert and Extract Audio, and refreshed Android screens. Windows builds are currently unsigned. Verify downloaded files with SHA256SUMS.txt."
+            --notes "Xovra 0.1.7 brings a richer cream-and-lime clay finish across the media workspace, raised source chips, and deeper inset controls. Windows builds are currently unsigned. Verify downloaded files with SHA256SUMS.txt."

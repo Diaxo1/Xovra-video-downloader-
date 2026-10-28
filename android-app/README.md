@@ -8,7 +8,7 @@ The Android app embeds yt-dlp as a Python package through the MIT-licensed Chaqu
 
 Install Android Studio with Android SDK 36 and JDK 17, then open this `android-app` folder. Build the `app` debug APK from Android Studio. The app supports current 64-bit Android devices (arm64-v8a) and x86_64 emulators, Android 10 / API 29 and newer.
 
-The latest stable Android release is [Xovra Android 0.1.3](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.3). Download `Xovra-Android-0.1.3.apk` from its Assets section. Install it over stable Android 0.1.2; uninstall the earlier debug preview first because it uses a different signing key. Android may ask you to allow installs from your browser.
+The latest stable Android release is [Xovra Android 0.1.4](https://github.com/Diaxo1/Xovra-video-downloader-/releases/tag/android-v0.1.4). Download `Xovra-Android-0.1.4.apk` from its Assets section. Install it over stable Android 0.1.3; uninstall the earlier debug preview first because it uses a different signing key. Android may ask you to allow installs from your browser.
 
 ## Current preview limits
 

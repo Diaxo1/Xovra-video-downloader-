@@ -62,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
@@ -417,7 +418,7 @@ private fun AnalyzerPage(
         }
         item { AnalyzerSteps(palette, hasLink = url.isNotBlank(), hasMedia = currentMedia != null) }
         item {
-            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(28.dp), palette, 11.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(30.dp), palette, 16.dp).padding(20.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Box(Modifier.size(38.dp).clip(RoundedCornerShape(13.dp)).background(palette.lime), contentAlignment = Alignment.Center) {
                         Text("01", color = palette.limeInk, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -499,8 +500,7 @@ private fun AnalyzerPage(
 private fun AnalyzerSteps(palette: Palette, hasLink: Boolean, hasMedia: Boolean) {
     val activeStep = if (hasMedia) 2 else if (hasLink) 1 else 0
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(palette.surface)
-            .border(1.dp, palette.line, RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 11.dp),
+        Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 7.dp).padding(horizontal = 12.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(7.dp)
     ) {
@@ -521,8 +521,7 @@ private fun AnalyzerSteps(palette: Palette, hasLink: Boolean, hasMedia: Boolean)
 @Composable
 private fun SourceChip(key: String, label: String, selected: Boolean, palette: Palette, modifier: Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
-    Row(Modifier.then(modifier).height(42.dp).clip(shape).background(if (selected) palette.lime else palette.surface)
-        .border(1.dp, if (selected) palette.lime.copy(alpha = .75f) else palette.line, shape)
+    Row(Modifier.then(modifier).height(42.dp).clay(if (selected) palette.lime else palette.surface, shape, palette, if (selected) 7.dp else 5.dp)
         .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 11.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
         when (key) { "x" -> Text("X", color = palette.ink, fontSize = 15.sp, fontWeight = FontWeight.SemiBold); "more" -> FigmaIcon("ellipsis", Modifier.size(17.dp)); else -> FigmaIcon(sourceIcon(key), Modifier.size(17.dp)) }
@@ -668,9 +667,9 @@ private fun SettingsPage(
             }
         }
         Column(Modifier.fillMaxWidth().clay(palette.surface, RoundedCornerShape(18.dp), palette, 4.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            Text("Release notes · v0.1.3", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text("• A guided link → format → save flow, with a more sculpted analyzer surface.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
-            Text("• Updated cream and lime colors with a clearer dark theme.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("Release notes · v0.1.4", color = palette.ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            Text("• Deeper clay shadows and soft inset highlights on key surfaces.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
+            Text("• Raised source chips and a more tactile Analyze action.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
             Text("• Downloads remain local and Xovra stays free with no ads.", color = palette.muted, fontSize = 13.sp, lineHeight = 19.sp)
         }
         Text("Downloads are saved to Downloads/Xovra on this device.", color = palette.muted, fontSize = 13.sp, lineHeight = 20.sp)
@@ -685,8 +684,11 @@ private fun FigmaIcon(name: String, modifier: Modifier = Modifier) {
 }
 
 private fun Modifier.clay(color: Color, shape: RoundedCornerShape, palette: Palette, elevation: Dp): Modifier =
-    shadow(elevation, shape, clip = false, ambientColor = palette.clayShadow.copy(alpha = if (palette == DarkPalette) .26f else .34f), spotColor = palette.clayShadow.copy(alpha = if (palette == DarkPalette) .4f else .22f))
-        .clip(shape).background(color, shape).border(1.dp, palette.line.copy(alpha = .75f), shape)
+    shadow(elevation * 1.7f, shape, clip = false, ambientColor = palette.clayShadow.copy(alpha = if (palette == DarkPalette) .55f else .54f), spotColor = palette.clayShadow.copy(alpha = if (palette == DarkPalette) .72f else .4f))
+        .shadow(elevation * .65f, shape, clip = false, ambientColor = Color.White.copy(alpha = if (palette == DarkPalette) .035f else .58f), spotColor = Color.White.copy(alpha = if (palette == DarkPalette) .02f else .3f))
+        .clip(shape)
+        .background(Brush.verticalGradient(listOf(color.copy(alpha = .98f), color, color)), shape)
+        .border(BorderStroke(1.dp, Brush.verticalGradient(listOf(Color.White.copy(alpha = if (palette == DarkPalette) .12f else .88f), palette.line.copy(alpha = .86f)))), shape)
 
 private fun readClipboard(context: Context): String? {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return null
